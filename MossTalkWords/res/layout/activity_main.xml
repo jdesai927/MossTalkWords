@@ -1,14 +1,88 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".MainActivity" >
+	<LinearLayout
+		android:id="@+id/topbar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_world" />
+		<TextView
+			android:id="@+id/hinttext"
+			android:layout_height="50dp"
+			android:layout_width="wrap_content"
+			android:layout_marginTop="5dp"
+			android:text="Hint:" />
 
+		<Button 
+			android:id="@+id/hintbuttona"
+			android:layout_height="50dp"
+			android:layout_width="50dp"
+			android:layout_marginLeft="10dp"
+			android:layout_marginTop="5dp"
+			android:text="1"/>
+		<Button 
+			android:id="@+id/hintbuttonb"
+			android:layout_height="50dp"
+			android:layout_width="50dp"
+			android:layout_marginLeft="10dp"
+			android:layout_marginTop="5dp"
+			android:text="2"/>
+		<Button 
+			android:id="@+id/hintbuttonc"
+			android:layout_height="50dp"
+			android:layout_width="50dp"
+			android:layout_marginLeft="10dp"
+			android:layout_marginTop="5dp"
+			android:text="3"/>
+
+		<TextView 
+			android:id="@+id/scoretext"
+			android:layout_height="50dp"
+			android:layout_width="wrap_content"
+			android:layout_marginLeft="20dp"
+			android:textSize="20dp" 
+			android:text="Score:"/>
+		
+		<TextView
+			android:id="@+id/score"
+			android:layout_height="50dp"
+			android:layout_width="wrap_content"
+			android:layout_marginLeft="5dp"
+			android:textSize="20dp"			
+			android:text="0"/>
+			
+	</LinearLayout>
+
+	<ImageView
+		android:id="@+id/image"
+		android:layout_width="250dp"
+		android:layout_height="250dp"
+		android:layout_centerHorizontal="true"
+		android:layout_centerVertical="true"/>
+
+	<RelativeLayout 
+		android:id="@+id/bottombar"
+		android:layout_alignParentBottom="true"
+		android:layout_width="fill_parent"
+		android:layout_height="50dp">
+		
+	    <Button 
+	        android:id="@+id/micbutton"
+	        android:layout_centerInParent="true"
+	        android:background="@drawable/mic"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"/>
+	   
+	   	<Button 
+	        android:id="@+id/skipbutton"
+	        android:layout_alignParentRight="true"
+	        android:layout_width="50dp"
+	        android:layout_height="50dp"
+	        android:text="Skip"/>
+	    
+	</RelativeLayout>
+	
 </RelativeLayout>
