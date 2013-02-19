@@ -1,18 +1,27 @@
 package edu.upenn.cis350.mosstalkwords;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -35,20 +44,39 @@ public class MainActivity extends Activity {
 	
 	private int score;
 	private String feedback_result = "";
+	private String [] _currentSet;
 	
 	
 	
 	private String buildUrl(String extension) {
-		return "https://s3.amazonaws.com/" + _currentPath + "/" + _currentIndex + extension;
+		_currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
+		//return "hi";
+		return "https://s3.amazonaws.com/mosstalkdata/" + _currentPath + "/" + _currentSet[_currentIndex] + extension;
+		
 	}
 	
-	private void loadImage() {
+	private void loadImage() throws ClientProtocolException, IOException {
+		setImage(buildUrl(".jpg"),_imgView);
+		
 		//_imgView.setImageBitmap(BitmapFactory.decodeFile(buildUrl(".jpg")));
+	//	_imgView.setVisibility(View.VISIBLE);
+	}
+	
+	private void setImage(String urlStr, ImageView iv) throws ClientProtocolException, IOException {
+	    DefaultHttpClient httpClient = new DefaultHttpClient();
+	    HttpGet request = new HttpGet(urlStr);
+	    HttpResponse response = httpClient.execute(request);
+	    InputStream is = response.getEntity().getContent();
+	    TypedValue typedValue = new TypedValue();
+	    typedValue.density = TypedValue.DENSITY_NONE;
+	    Drawable drawable = Drawable.createFromResourceStream(null, typedValue, is, "src");
+	    iv.setImageDrawable(drawable);
 	}
 	
 	private void playSound(String hint) {
 		try {
-			_mediaPlayer.setDataSource(buildUrl(hint + ".wav"));
+			_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/nonlivingthingshard/boomerang.wav");
+			//_mediaPlayer.setDataSource(buildUrl(hint + ".wav"));
 			_mediaPlayer.prepare();
 			_mediaPlayer.start();
 		} catch (IllegalArgumentException e) {
@@ -66,12 +94,20 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        _currentIndex = 1;
-        _currentPath = getIntent().getStringExtra("currentSetPath");
-        
-        loadImage();
-        
+        _imgView = (ImageView) findViewById(R.id.image);
+        _currentIndex = 0;
+        _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
+        Toast.makeText(getBaseContext(), _currentPath, Toast.LENGTH_LONG).show();
+        try {
+			loadImage();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+       
         _hintAButton = (Button) findViewById(R.id.hintbuttona);
         _hintBButton = (Button) findViewById(R.id.hintbuttonb);
         _hintCButton = (Button) findViewById(R.id.hintbuttonc);
@@ -84,19 +120,19 @@ public class MainActivity extends Activity {
         
         _hintAButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("a");
+				playSound("_phrase");
 			}
 		});
         
         _hintBButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("b");
+				playSound("_rhyme");
 			}
 		});
         
         _hintCButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("c");
+				playSound("");
 			}
 		});
         
@@ -114,14 +150,21 @@ public class MainActivity extends Activity {
 				                   "Oops! Your device doesn't support Speech to Text",
 				                   Toast.LENGTH_SHORT).show();
 		        }
-
 			}
 		});
         
         _skipButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				_currentIndex++;
-				loadImage();
+				try {
+					loadImage();
+				} catch (ClientProtocolException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				
 			}
 		});
@@ -158,8 +201,7 @@ public class MainActivity extends Activity {
     }
     
     
-    
-    
+
     /**
 	 * Method that displays a dialog showing the user whether they said the right 
 	 * answer or not, and giving them the option of continuing or trying again.

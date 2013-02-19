@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PickSet" >
+
+	<LinearLayout
+		android:id="@+id/topbar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
+		
+	    <TextView
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/welcome" 
+	    	android:textSize="25sp"
+		/>
+	    
+	    <TextView
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="Please select from the categories below" 
+	    	android:textSize="15sp"
+	    	/>
+	 	
+	 	    <Spinner
+	 	        android:id="@+id/set_spinner"
+				android:layout_height="wrap_content"
+				android:layout_width="wrap_content"
+				android:prompt="@string/cat"
+				android:layout_marginLeft="10dp"
+				android:layout_marginTop="5dp"/>
+	 	    <Spinner
+	 	        android:id="@+id/difficulty_spinner"
+	 	        android:layout_height="wrap_content"
+	 	        android:layout_width="wrap_content"
+	 	        android:layout_marginLeft="10dp"
+	 	        android:prompt="@string/diff"
+				android:layout_marginTop="5dp"/>
+	 	    <Button 
+	 	        android:id="@+id/start_button"
+	 	        android:layout_height="wrap_content"
+	 	        android:layout_width="wrap_content"
+				android:layout_marginTop="20dp"
+				android:layout_gravity="right"
+				android:layout_marginRight="10dp"
+				android:onClick = "onStartButtonClick"
+				android:text="Start!"/>
+	    
+	</LinearLayout>
+	
+</RelativeLayout>
+

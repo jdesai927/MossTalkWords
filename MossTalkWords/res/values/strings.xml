@@ -4,5 +4,38 @@
     <string name="app_name">MossTalkWords</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="welcome">Welcome!</string>
+    <string name="diff">Choose a difficulty</string>
+    <string name="cat">Choose a category</string>
+    <string-array name="stimulus_array">
+        <item>Living Things</item>
+        <item>Non Living Things</item>
+    </string-array>
+    <string-array name="difficulty_array">
+        <item>Easy</item>
+        <item>Hard</item>
+    </string-array>
+    <string-array name="nonlivingthingseasy">
+        
+    </string-array>
+    <string-array name="livingthingseasy">
+        
+    </string-array>
+   <string-array name="nonlivingthingshard">
+      
+        <item>freezer</item>
+        <item>stadium</item>
+        <item>icicle</item>
+        <item>marker</item>
+        <item>parachute</item>
+        <item>motorcycle</item>
+        <item>toothbrush</item>
+        <item>spatula</item>
+        <item>boomerang</item>
+        <item>calculator</item>
+    </string-array>
+    <string-array name="livingthingshard">
+        
+    </string-array>
 
 </resources>
