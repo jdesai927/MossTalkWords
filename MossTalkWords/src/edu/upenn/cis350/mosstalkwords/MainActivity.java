@@ -96,8 +96,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         _imgView = (ImageView) findViewById(R.id.image);
         _currentIndex = 0;
+       
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
-        Toast.makeText(getBaseContext(), _currentPath, Toast.LENGTH_LONG).show();
         try {
 			loadImage();
 		} catch (ClientProtocolException e) {

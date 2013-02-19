@@ -15,8 +15,8 @@ public class PickSet extends Activity {
 	public final static String currentSet = "edu.upenn.cis350.mosstalkwords.currentSet";
 	private Spinner stimspinner;
 	private Spinner diffspinner;
-	private String difficulty="easy";
-	private String category="nonlivingthings";
+	private String difficulty;
+	private String category;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState){
