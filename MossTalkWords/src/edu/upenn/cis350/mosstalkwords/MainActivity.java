@@ -3,6 +3,7 @@ package edu.upenn.cis350.mosstalkwords;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -19,6 +20,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.TypedValue;
@@ -50,13 +52,47 @@ public class MainActivity extends Activity {
 	
 	private String buildUrl(String extension) {
 		_currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-		//return "hi";
 		return "https://s3.amazonaws.com/mosstalkdata/" + _currentPath + "/" + _currentSet[_currentIndex] + extension;
 		
 	}
 	
-	private void loadImage() throws ClientProtocolException, IOException {
-		setImage(buildUrl(".jpg"),_imgView);
+	private class LoadFilesTask extends AsyncTask<String, Integer, Drawable>{
+
+		@Override
+		protected Drawable doInBackground(String... url) {
+			Drawable draw = null;
+			DefaultHttpClient httpClient = new DefaultHttpClient();
+		    HttpGet request = new HttpGet(url[0]);
+		    HttpResponse response;
+			try {
+				response = httpClient.execute(request);
+				InputStream is;
+				is = response.getEntity().getContent();
+				TypedValue typedValue = new TypedValue();
+			    typedValue.density = TypedValue.DENSITY_NONE;
+			    draw = Drawable.createFromResourceStream(null, typedValue, is, "src");
+			//    _imgView.setImageDrawable(drawable);
+			
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    
+		 return draw;
+		}
+		
+	}
+	
+	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {
+		 AsyncTask<String, Integer, Drawable> at = new LoadFilesTask().execute(buildUrl(".jpg"));
+		 Drawable draw = at.get();
+		 if (draw != null){
+		 _imgView.setImageDrawable(draw);
+		 }
+		//setImage(buildUrl(".jpg"),_imgView);
 		
 		//_imgView.setImageBitmap(BitmapFactory.decodeFile(buildUrl(".jpg")));
 	//	_imgView.setVisibility(View.VISIBLE);
@@ -99,7 +135,15 @@ public class MainActivity extends Activity {
        
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
         try {
-			loadImage();
+			try {
+				loadImage();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -162,6 +206,12 @@ public class MainActivity extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
