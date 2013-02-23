@@ -1,5 +1,6 @@
 package edu.upenn.cis350.mosstalkwords;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,7 +8,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
 
 public class PickSet extends Activity {
@@ -64,29 +64,31 @@ public class PickSet extends Activity {
 		}
 	}
 	public class DifficultySelectedListener implements OnItemSelectedListener {
-		 
-		  public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+		
+		@SuppressLint("DefaultLocale")
+		public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
 			 difficulty = parent.getItemAtPosition(pos).toString();	
 			 difficulty = difficulty.replaceAll("\\s","");
 			 difficulty = difficulty.toLowerCase();
-		  }
-		  @Override
-		  public void onNothingSelected(AdapterView<?> arg0) {
-		  }
+		 }
+		  
+		 @Override
+		 public void onNothingSelected(AdapterView<?> arg0) {}
 		 
 		}
 	
 	
 	public class CategorySelectedListener implements OnItemSelectedListener {
 		 
-		  public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
+		@SuppressLint("DefaultLocale")
+		public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
 			 category = parent.getItemAtPosition(pos).toString();	
 			 category = category.replaceAll("\\s","");
 			 category = category.toLowerCase();
-		  }
-		  @Override
-		  public void onNothingSelected(AdapterView<?> arg0) {
-		  }
+		}
+		
+		@Override
+		public void onNothingSelected(AdapterView<?> arg0) {}
 		 
 		}
 }

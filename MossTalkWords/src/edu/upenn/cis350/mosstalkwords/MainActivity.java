@@ -15,8 +15,6 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -36,23 +34,24 @@ public class MainActivity extends Activity {
 	private ImageView _imgView;
 	private String _currentPath;
 	private int _currentIndex;
-	private Button _hintAButton;
-	private Button _hintBButton;
-	private Button _hintCButton;
+	private Button _hintPhraseButton;
+	private Button _hintRhymeButton;
+	private Button _hintPronounceButton;
 	private Button _micButton;
 	private Button _skipButton;
 	private Button _feedbackButton;
 	private MediaPlayer _mediaPlayer;
 	
 	private int score;
-	private String feedback_result = "";
-	private String [] _currentSet;
+	private String _feedbackResult = "";
+	private String[] _currentSet;
 	
 	
 	
 	private String buildUrl(String extension) {
 		_currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-		return "https://s3.amazonaws.com/mosstalkdata/" + _currentPath + "/" + _currentSet[_currentIndex] + extension;
+		return "https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+				"/" + _currentSet[_currentIndex] + extension;
 		
 	}
 	
@@ -71,13 +70,10 @@ public class MainActivity extends Activity {
 				TypedValue typedValue = new TypedValue();
 			    typedValue.density = TypedValue.DENSITY_NONE;
 			    draw = Drawable.createFromResourceStream(null, typedValue, is, "src");
-			//    _imgView.setImageDrawable(drawable);
-			
+			//  _imgView.setImageDrawable(drawable);
 			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		    
@@ -96,6 +92,10 @@ public class MainActivity extends Activity {
 	
 	private void playSound(String hint) {
 		try {
+			if (_mediaPlayer.isPlaying()) {
+				_mediaPlayer.stop();
+			}
+			_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/nonlivingthingshard/boomerang.wav");
 			//_mediaPlayer.setDataSource(buildUrl(hint + ".wav"));
 			_mediaPlayer.prepare();
@@ -137,9 +137,9 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
        
-        _hintAButton = (Button) findViewById(R.id.hintbuttona);
-        _hintBButton = (Button) findViewById(R.id.hintbuttonb);
-        _hintCButton = (Button) findViewById(R.id.hintbuttonc);
+        _hintPhraseButton = (Button) findViewById(R.id.hintbuttona);
+        _hintRhymeButton = (Button) findViewById(R.id.hintbuttonb);
+        _hintPronounceButton = (Button) findViewById(R.id.hintbuttonc);
         _micButton = (Button) findViewById(R.id.micbutton);
         _skipButton = (Button) findViewById(R.id.skipbutton);
         _feedbackButton = (Button) findViewById(R.id.feedbackbutton);
@@ -147,19 +147,19 @@ public class MainActivity extends Activity {
         _mediaPlayer = new MediaPlayer();
         _mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         
-        _hintAButton.setOnClickListener(new OnClickListener() {
+        _hintPhraseButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("_phrase");
+				playSound("phrase");
 			}
 		});
         
-        _hintBButton.setOnClickListener(new OnClickListener() {
+        _hintRhymeButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("_rhyme");
+				playSound("rhyme");
 			}
 		});
         
-        _hintCButton.setOnClickListener(new OnClickListener() {
+        _hintPronounceButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("");
 			}
@@ -212,7 +212,7 @@ public class MainActivity extends Activity {
 		        //if voice succeeded, display feedback
 		        giveFeedback(voiceCorrect,"apple",null);
 		        
-		        //based on what button the user pressed (saved in feedback_result), stay with
+		        //based on what button the user pressed (saved in _feedbackResult), stay with
 		        //  this pic or move on
         	}
         });
@@ -269,7 +269,7 @@ public class MainActivity extends Activity {
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 				
 				public void onClick(DialogInterface dialog, int which) {
-					feedback_result="continue";
+					_feedbackResult="continue";
 					score += 1;
 		        	TextView st = (TextView) findViewById(R.id.score);
 		        	st.setText(Integer.toString(score));
@@ -285,7 +285,7 @@ public class MainActivity extends Activity {
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 				
 				public void onClick(DialogInterface dialog, int which) {
-					feedback_result="continue";
+					_feedbackResult="continue";
 				}
 			});
 		}
@@ -297,7 +297,7 @@ public class MainActivity extends Activity {
 			b.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					feedback_result="again";
+					_feedbackResult="again";
 				}
 			});
 		}
