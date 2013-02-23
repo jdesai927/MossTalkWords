@@ -92,21 +92,6 @@ public class MainActivity extends Activity {
 		 if (draw != null){
 		 _imgView.setImageDrawable(draw);
 		 }
-		//setImage(buildUrl(".jpg"),_imgView);
-		
-		//_imgView.setImageBitmap(BitmapFactory.decodeFile(buildUrl(".jpg")));
-	//	_imgView.setVisibility(View.VISIBLE);
-	}
-	
-	private void setImage(String urlStr, ImageView iv) throws ClientProtocolException, IOException {
-	    DefaultHttpClient httpClient = new DefaultHttpClient();
-	    HttpGet request = new HttpGet(urlStr);
-	    HttpResponse response = httpClient.execute(request);
-	    InputStream is = response.getEntity().getContent();
-	    TypedValue typedValue = new TypedValue();
-	    typedValue.density = TypedValue.DENSITY_NONE;
-	    Drawable drawable = Drawable.createFromResourceStream(null, typedValue, is, "src");
-	    iv.setImageDrawable(drawable);
 	}
 	
 	private void playSound(String hint) {
@@ -240,9 +225,16 @@ public class MainActivity extends Activity {
         case 1: {
             if (resultCode == RESULT_OK && data != null) {
                 ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                Toast.makeText(getApplicationContext(),
-		                       "Your result is: " + result.get(0),
-		                       Toast.LENGTH_LONG).show();
+                
+                String correctAnswer = _currentSet[_currentIndex];
+                
+                for(String str: result)
+                {
+                	if(str.equals(correctAnswer))
+                	{
+                		giveFeedback(true, str, correctAnswer);
+                	}
+                }
             }
             break;
         }

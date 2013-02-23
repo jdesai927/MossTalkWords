@@ -49,9 +49,7 @@ public class PickSet extends Activity {
 	}
 	
 	public String[] getSetArray(String key){
-		if(true){
-			return getResources().getStringArray(R.array.nonlivingthingshard);	
-		}
+		
 		if (key.equals("nonlivingthingseasy")){
 			return getResources().getStringArray(R.array.nonlivingthingseasy);
 		}
