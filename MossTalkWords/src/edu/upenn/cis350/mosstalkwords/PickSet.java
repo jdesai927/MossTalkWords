@@ -9,18 +9,23 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 public class PickSet extends Activity {
 	public final static String currentSetPath = "edu.upenn.cis350.mosstalkwords.currentSetPath";
 	public final static String currentSet = "edu.upenn.cis350.mosstalkwords.currentSet";
+	public final static String newScore = "edu.upenn.cis350.mosstalkwords.newScore";
 	private Spinner stimspinner;
 	private Spinner diffspinner;
 	private String difficulty;
 	private String category;
+	private int savedscore;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		savedscore = getIntent().getIntExtra("edu.upenn.cis350.mosstalkwords.currentSavedScore", 0);
+		
 		setContentView(R.layout.activity_pick);
 		
 		stimspinner = (Spinner) findViewById(R.id.set_spinner);
@@ -32,7 +37,7 @@ public class PickSet extends Activity {
 		diffspinner = (Spinner) findViewById(R.id.difficulty_spinner);
 		ArrayAdapter<CharSequence> diffadapter = ArrayAdapter.createFromResource(this,
 		        R.array.difficulty_array, android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		diffadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		diffspinner.setAdapter(diffadapter);
 		stimspinner.setOnItemSelectedListener(new CategorySelectedListener());
 		diffspinner.setOnItemSelectedListener(new DifficultySelectedListener());
@@ -41,10 +46,9 @@ public class PickSet extends Activity {
 	public void onStartButtonClick(View view){
 		
 		Intent i = new Intent(this, MainActivity.class);
-	
-		
 		i.putExtra(currentSetPath, category+difficulty);
 		i.putExtra(currentSet, getSetArray(category+difficulty));
+		i.putExtra(newScore, savedscore);
 		startActivity(i);
 	}
 	
