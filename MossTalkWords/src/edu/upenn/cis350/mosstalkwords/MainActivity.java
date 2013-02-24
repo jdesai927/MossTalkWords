@@ -39,10 +39,11 @@ public class MainActivity extends Activity {
 	private Button _hintPronounceButton;
 	private Button _micButton;
 	private Button _skipButton;
-	private Button _feedbackButton;
 	private MediaPlayer _mediaPlayer;
 	
-	private int score;
+	private int _score = 0;
+	private int _numHintsUsed = 0;
+	private int _numTries = 0;
 	private String _feedbackResult = "";
 	private String[] _currentSet;
 	
@@ -142,7 +143,6 @@ public class MainActivity extends Activity {
         _hintPronounceButton = (Button) findViewById(R.id.hintbuttonc);
         _micButton = (Button) findViewById(R.id.micbutton);
         _skipButton = (Button) findViewById(R.id.skipbutton);
-        _feedbackButton = (Button) findViewById(R.id.feedbackbutton);
         
         _mediaPlayer = new MediaPlayer();
         _mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -150,18 +150,21 @@ public class MainActivity extends Activity {
         _hintPhraseButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("phrase");
+				_numHintsUsed++;
 			}
 		});
         
         _hintRhymeButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("rhyme");
+				_numHintsUsed++;
 			}
 		});
         
         _hintPronounceButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("");
+				_numHintsUsed++;
 			}
 		});
         
@@ -185,6 +188,9 @@ public class MainActivity extends Activity {
         _skipButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				_currentIndex++;
+				
+				_numHintsUsed = 0;
+				_numTries = 0;
 				try {
 					loadImage();
 				} catch (ClientProtocolException e) {
@@ -204,18 +210,6 @@ public class MainActivity extends Activity {
 			}
 		});
         
-        _feedbackButton.setOnClickListener(new OnClickListener() {
-        	public void onClick(View v) {
-        		
-        		boolean voiceCorrect = false;  //simulating a result from the voice recognition for now
-        		
-		        //if voice succeeded, display feedback
-		        giveFeedback(voiceCorrect,"apple",null);
-		        
-		        //based on what button the user pressed (saved in _feedbackResult), stay with
-		        //  this pic or move on
-        	}
-        });
     }
     
     @Override
@@ -232,9 +226,12 @@ public class MainActivity extends Activity {
                 {
                 	if(str.equals(correctAnswer))
                 	{
-                		giveFeedback(true, str, correctAnswer);
+                		giveFeedback(true, str);
+                		return;
                 	}
                 }
+                
+                giveFeedback(false, result.get(0));
             }
             break;
         }
@@ -249,11 +246,8 @@ public class MainActivity extends Activity {
 	 * answer or not, and giving them the option of continuing or trying again.
 	 * @param isSuccess  whether or not the user said the correct word
 	 * @param word_said  the word that the user said
-	 * @param answer  the correct answer (if null, it is ignored.  if not null, and
-	 * isSuccess is false, the dialog assumes we want the user to move on and they 
-	 * are shown the correct answer and only the Continue button)
 	 */
-	private void giveFeedback(boolean isSuccess, String word_said, String answer) {
+	private void giveFeedback(boolean isSuccess, String word_said) {
 		
 		//build the dialog
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
@@ -270,22 +264,28 @@ public class MainActivity extends Activity {
 				
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
-					score += 1;
+					_score += 3-_numHintsUsed;
 		        	TextView st = (TextView) findViewById(R.id.score);
-		        	st.setText(Integer.toString(score));
+		        	st.setText(Integer.toString(_score));
+
+					_numTries = 0;
+		        	_numHintsUsed = 0;
 				}
 			});
 			
 		}
-		else if(isSuccess == false && answer != null) {  //got it wrong, but time to move on
+		else if(isSuccess == false && _numTries >= 3) {  //got it wrong, but time to move on
 			b.setTitle("Try the next picture!");
 			b.setIcon(R.drawable.wrong);
-			b.setMessage("The correct answer was: " + answer);
+			b.setMessage("The correct answer was: " + _currentSet[_currentIndex]);
 			
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 				
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
+					
+					_numTries = 0;
+		        	_numHintsUsed = 0;
 				}
 			});
 		}
@@ -298,6 +298,7 @@ public class MainActivity extends Activity {
 
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="again";
+					_numTries++;
 				}
 			});
 		}
