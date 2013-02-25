@@ -160,10 +160,10 @@ public class MainActivity extends Activity {
 			}
 			
 			_mediaPlayer.reset();
-			_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			//_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
 					"/" + _currentSet[_currentIndex] + hint + ".wav");
-			//_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/nonlivingthingshard/boomerang.wav");
+			//_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/nonlivingthingseasy/banana.wav");
 			_mediaPlayer.prepare();
 			_mediaPlayer.start();
 		} catch (IllegalArgumentException e) {
@@ -311,7 +311,7 @@ public class MainActivity extends Activity {
                 
                 for(String str: result)
                 {
-                	if(str.equals(correctAnswer))
+                	if(str.equals(correctAnswer) || str.contains(correctAnswer))
                 	{
                 		giveFeedback(true, str);
                 		return;
