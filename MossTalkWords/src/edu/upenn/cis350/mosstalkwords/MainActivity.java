@@ -210,6 +210,7 @@ public class MainActivity extends Activity {
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
+  // 	AsyncTask<String, Integer, Boolean> downloadOneFile = new LoadOneFile().execute("");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         _imgView = (ImageView) findViewById(R.id.image);
@@ -219,7 +220,6 @@ public class MainActivity extends Activity {
         _score = getIntent().getIntExtra("edu.upenn.cis350.mosstalkwords.newScore", 0);
         TextView st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_score));
-    	AsyncTask<String, Integer, Boolean> downloadOneFile = new LoadOneFile().execute("");
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
         
     	try {

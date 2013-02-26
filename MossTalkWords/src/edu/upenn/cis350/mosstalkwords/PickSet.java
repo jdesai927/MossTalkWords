@@ -1,8 +1,21 @@
 package edu.upenn.cis350.mosstalkwords;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
+import org.apache.http.util.ByteArrayBuffer;
+
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -24,6 +37,7 @@ public class PickSet extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		AsyncTask<String, Integer, Boolean> downloadOneFile = new LoadOneFile().execute("");
 		savedscore = getIntent().getIntExtra("edu.upenn.cis350.mosstalkwords.currentSavedScore", 0);
 		
 		setContentView(R.layout.activity_pick);
@@ -41,6 +55,7 @@ public class PickSet extends Activity {
 		diffspinner.setAdapter(diffadapter);
 		stimspinner.setOnItemSelectedListener(new CategorySelectedListener());
 		diffspinner.setOnItemSelectedListener(new DifficultySelectedListener());
+	
 	}
 	
 	public void onStartButtonClick(View view){
@@ -95,4 +110,39 @@ public class PickSet extends Activity {
 		public void onNothingSelected(AdapterView<?> arg0) {}
 		 
 		}
+	
+	private class LoadOneFile extends AsyncTask<String, Integer, Boolean>{
+		@Override
+		protected Boolean doInBackground(String... set) {
+			boolean b = false;
+			String [] categories = {"nonlivingthingseasy", "nonlivingthingshard"};//, "livingthingseasy", "livingthingshard"};
+			try {
+				for (int i = 0; i< categories.length; i++){
+					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + categories[i] + 
+				"/" + getSetArray(categories[i])[0] + ".jpg");
+					
+					File file = new File(getApplicationContext().getCacheDir(),  getSetArray(categories[i])[0] +".jpg");
+					URLConnection ucon = ur.openConnection();
+					InputStream is = ucon.getInputStream();
+					BufferedInputStream bis = new BufferedInputStream(is);
+					ByteArrayBuffer baf = new ByteArrayBuffer(50);
+					int current = 0;
+					while ((current = bis.read()) != -1)
+						baf.append((byte) current);
+					FileOutputStream fos = new FileOutputStream(file);
+					fos.write(baf.toByteArray());
+					fos.close();
+					b = true;
+				}
+				 
+			}catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		 return b;
+		}
+		
+	}
 }
