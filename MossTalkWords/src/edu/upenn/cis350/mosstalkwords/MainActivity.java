@@ -55,10 +55,12 @@ public class MainActivity extends Activity {
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
 	
-	private int _score = 0;
-	private int _numHintsUsed = 0;
+	public int _score = 0;
+	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
+	public AlertDialog ad;
+	
 	private String[] _currentSet;
 
 	private String buildUrl(String extension) {
@@ -301,7 +303,7 @@ public class MainActivity extends Activity {
     }
     
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
         case 1: {
@@ -382,7 +384,10 @@ public class MainActivity extends Activity {
 				}
 			});
 		}
-		b.show();  //show the dialog
+		
+		ad = b.create();
+		ad.show();  //show the dialog
+		
 		//play the audio feedback
 		if(isSuccess) {
 			MediaPlayer mp = MediaPlayer.create(this, R.raw.correct);
