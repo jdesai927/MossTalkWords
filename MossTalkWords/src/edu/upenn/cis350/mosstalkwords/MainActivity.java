@@ -219,21 +219,24 @@ public class MainActivity extends Activity {
         _hintPhraseButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("_phrase");
-				_numHintsUsed++;
+				if(_numHintsUsed < 3)
+					_numHintsUsed++;	
 			}
 		});
         
         _hintRhymeButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("_rhyme");
-				_numHintsUsed++;
+				if(_numHintsUsed < 3)
+					_numHintsUsed++;
 			}
 		});
         
         _hintPronounceButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				playSound("");
-				_numHintsUsed++;
+				if(_numHintsUsed < 3)
+					_numHintsUsed++;
 			}
 		});
         

@@ -84,14 +84,6 @@ tools:context=".MainActivity" >
 		android:layout_alignParentBottom="true"
 		android:layout_width="fill_parent"
 		android:layout_height="75dp">
-		
-		<Button 
-	        android:id="@+id/feedbackbutton"
-	        android:layout_alignParentLeft="true"
-	        android:layout_width="150dp"
-	        android:layout_height="100dp"
-	        android:textSize="25dp" 
-	        android:text="Feedback"/>
 	    
 	    <Button 
 	        android:id="@+id/micbutton"
