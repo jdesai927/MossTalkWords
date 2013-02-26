@@ -26,20 +26,19 @@ public final class R {
     }
     public static final class id {
         public static final int bottombar=0x7f090008;
-        public static final int difficulty_spinner=0x7f09000d;
-        public static final int feedbackbutton=0x7f090009;
+        public static final int difficulty_spinner=0x7f09000c;
         public static final int hintbuttona=0x7f090002;
         public static final int hintbuttonb=0x7f090003;
         public static final int hintbuttonc=0x7f090004;
         public static final int hinttext=0x7f090001;
         public static final int image=0x7f090007;
-        public static final int menu_settings=0x7f09000f;
-        public static final int micbutton=0x7f09000a;
+        public static final int menu_settings=0x7f09000e;
+        public static final int micbutton=0x7f090009;
         public static final int score=0x7f090006;
         public static final int scoretext=0x7f090005;
-        public static final int set_spinner=0x7f09000c;
-        public static final int skipbutton=0x7f09000b;
-        public static final int start_button=0x7f09000e;
+        public static final int set_spinner=0x7f09000b;
+        public static final int skipbutton=0x7f09000a;
+        public static final int start_button=0x7f09000d;
         public static final int topbar=0x7f090000;
     }
     public static final class layout {

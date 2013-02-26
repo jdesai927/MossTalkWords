@@ -131,20 +131,49 @@ public class MainActivity extends Activity {
 		}
 		
 	}
-	
+	private class LoadOneFile extends AsyncTask<String, Integer, Boolean>{
+		@Override
+		protected Boolean doInBackground(String... set) {
+			boolean b = false;
+			//String [] extensions = {".jpg", "_phrase.wav", "_rhyme.wav", ".wav"};
+			try {
+					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+				"/" + _currentSet[0] + ".jpg");
+					File file = new File(getApplicationContext().getCacheDir(),_currentSet[0]+".jpg");
+					URLConnection ucon = ur.openConnection();
+					InputStream is = ucon.getInputStream();
+					BufferedInputStream bis = new BufferedInputStream(is);
+					ByteArrayBuffer baf = new ByteArrayBuffer(50);
+					int current = 0;
+					while ((current = bis.read()) != -1)
+						baf.append((byte) current);
+					FileOutputStream fos = new FileOutputStream(file);
+					fos.write(baf.toByteArray());
+					fos.close();
+					b = true;
+		
+				 
+			}catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		 return b;
+		}
+		
+	}
 	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		 options.inSampleSize = 2;
 		 options.outHeight = (_imgView.getHeight())/2;
 		 options.outWidth= _imgView.getWidth();
-		Bitmap myBitmap;
+		Bitmap myBitmap = null;
 		 try{
 			 myBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
 		 }
 		 catch(Exception e){
-			 HttpURLConnection con = (HttpURLConnection)new URL(buildUrl(".jpg")).openConnection();
-			    InputStream is = con.getInputStream();
-			    myBitmap = BitmapFactory.decodeStream(is, null, options);
+			e.printStackTrace();
 		 }
 			
 		 if (myBitmap != null){
@@ -190,6 +219,7 @@ public class MainActivity extends Activity {
         _score = getIntent().getIntExtra("edu.upenn.cis350.mosstalkwords.newScore", 0);
         TextView st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_score));
+    	AsyncTask<String, Integer, Boolean> downloadOneFile = new LoadOneFile().execute("");
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
         
     	try {
