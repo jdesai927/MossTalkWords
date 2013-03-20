@@ -62,11 +62,17 @@ public class MainActivity extends Activity {
 	private Button _micButton;
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
+
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
 	private TreeMap<String, String[]> hints; 
 	private int _rhymeUsed; 
 	public int _score = 0;
+
+	
+	public Scores _scores;
+	public int _setScore = 0;
+	public int _streak = 0;
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
@@ -284,9 +290,12 @@ public class MainActivity extends Activity {
         _currentIndex = 0;
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
         _currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-        _score = getIntent().getIntExtra("edu.upenn.cis350.mosstalkwords.newScore", 0);
+        _scores = (Scores) getIntent().getSerializableExtra("edu.upenn.cis350.mosstalkwords.currentScores");
+        
+        _setScore = 0;
+        _streak = 0;
         TextView st = (TextView) findViewById(R.id.score);
-    	st.setText(Integer.toString(_score));
+    	st.setText(Integer.toString(_setScore));
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
         AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
         soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
@@ -359,6 +368,10 @@ public class MainActivity extends Activity {
         
         _skipButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				if(_scores.getHighestStreak() < _streak)
+					_scores.setHighestStreak(_streak);
+				
+				_streak = 0;
 				nextImage();
 			}
 		});
@@ -397,8 +410,20 @@ public class MainActivity extends Activity {
     	boolean end = false;
     	if(_currentIndex >= _currentSet.length){
     		end = true;
+    		
+    		//check if current set score is > high score, if so update
+    		if(_setScore > _scores.getHighScore(_currentPath)) {
+    			_scores.setHighScore(_currentPath, _setScore);
+    		}
+    		
+    		//check highest streak compared to current streak
+    		if(_scores.getHighestStreak() < _streak)
+				_scores.setHighestStreak(_streak);
+			
+    		_scores.incTotalScore(_setScore); //increment total score by this set's score
+    		
     		Intent i = new Intent(this, PickSet.class);
-    		i.putExtra(currentSavedScore, _score);
+    		i.putExtra("edu.upenn.cis350.mosstalkwords.currentScores", _scores);
     		startActivity(i);
     	}
     	return end;
@@ -451,16 +476,17 @@ public class MainActivity extends Activity {
 				
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
-					_score += 3-_numHintsUsed;
+					_setScore += 3-_numHintsUsed;
+					_streak++;
 		        	TextView st = (TextView) findViewById(R.id.score);
-		        	st.setText(Integer.toString(_score));
+		        	st.setText(Integer.toString(_setScore));
 		        	nextImage();
 					
 				}
 			});
 			
 		}
-		else if(isSuccess == false && _numTries >= 3) {  //got it wrong, but time to move on
+		else if(isSuccess == false && _numTries >= 2) {  //got it wrong, but time to move on
 			b.setTitle("Try the next picture!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("The correct answer was: " + _currentSet[_currentIndex]);
@@ -469,6 +495,12 @@ public class MainActivity extends Activity {
 				
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
+					
+					//check if streak that just ended was the highest
+					if(_scores.getHighestStreak() < _streak)
+						_scores.setHighestStreak(_streak);
+					
+					_streak = 0;
 					nextImage();
 				}
 			});
@@ -483,6 +515,12 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="again";
 					_numTries++;
+					
+					//check if streak that just ended was the highest
+					if(_scores.getHighestStreak() < _streak)
+						_scores.setHighestStreak(_streak);
+					
+					_streak = 0;
 				}
 			});
 		}
