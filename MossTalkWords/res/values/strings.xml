@@ -47,5 +47,18 @@
     <string-array name="livingthingshard">
         
     </string-array>
+    
+        <string-array name="nonlivingthingsmedium">
+        <item>darts</item>
+        <item>pyramid</item>
+        <item>bicycle</item>
+        <item>camera</item>
+        <item>scissors</item>
+        <item>elevator</item>
+        <item>bubble</item>
+        <item>shovel</item>
+        <item>cinnamon</item>
+        <item>radio</item>
+    </string-array>
 
 </resources>
