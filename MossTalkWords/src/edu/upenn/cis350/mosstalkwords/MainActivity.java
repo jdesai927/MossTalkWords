@@ -78,12 +78,12 @@ public class MainActivity extends Activity {
 	private String _feedbackResult = "";
 	public AlertDialog ad;
 	
-	private String[] _currentSet;
+	private ArrayList<String> _currentSet;
 
 	private String buildUrl(String extension) {
-		_currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
+		_currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
 		return "https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				"/" + _currentSet[_currentIndex] + extension;
+				"/" + _currentSet.get(_currentIndex) + extension;
 		
 	}
 	private String buildCachePath(String extension){
@@ -95,7 +95,7 @@ public class MainActivity extends Activity {
 					}
 						else
 						{
-							return getApplicationContext().getCacheDir().getPath()+"/"+_currentSet[_currentIndex]+extension; 
+							return getApplicationContext().getCacheDir().getPath()+"/"+_currentSet.get(_currentIndex)+extension; 
 						}
 					
 				}
@@ -120,10 +120,11 @@ public class MainActivity extends Activity {
 			try {
 			 for(int j = 0; j< extensions.length; j++){
 				String extension = extensions[j];
-				for (int i = 0; i<_currentSet.length; i++){
+				if(_currentSet != null){
+				for (String word: _currentSet){
 					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				"/" + _currentSet[i] + extension);
-					File file = new File(getApplicationContext().getCacheDir(),_currentSet[i]+extension);
+				"/" +word + extension);
+					File file = new File(getApplicationContext().getCacheDir(),word+extension);
 					URLConnection ucon = ur.openConnection();
 					InputStream is = ucon.getInputStream();
 					BufferedInputStream bis = new BufferedInputStream(is);
@@ -137,6 +138,7 @@ public class MainActivity extends Activity {
 					b = true;
 				}
 				
+				}
 			} 
 			}catch (MalformedURLException e1) {
 				e1.printStackTrace();
@@ -181,7 +183,6 @@ public class MainActivity extends Activity {
 							if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
 								String [] hts = {sentence, Rhyme1, Rhyme2};
 								hints.put(word, hts);
-								Log.i("info", Arrays.toString(hints.get(word)));
 							}
 						}	
 						
@@ -227,7 +228,7 @@ public class MainActivity extends Activity {
 			_mediaPlayer.reset();
 			//_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-					"/" + _currentSet[_currentIndex] + hint + ".wav");
+					"/" + _currentSet.get(_currentIndex) + hint + ".wav");
 			//_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/nonlivingthingseasy/banana.wav");
 			_mediaPlayer.prepare();
 			_mediaPlayer.start();
@@ -248,12 +249,12 @@ public class MainActivity extends Activity {
 		}
 		else {
 			String text = "";
-			Log.i("info", _currentSet[_currentIndex]);
-			Log.i("info", Arrays.toString(hints.get(_currentSet[_currentIndex])));
-			String[] hintarray = hints.get(_currentSet[_currentIndex]);
+			Log.i("info", _currentSet.get(_currentIndex));
+			Log.i("info", Arrays.toString(hints.get(_currentSet.get(_currentIndex))));
+			String[] hintarray = hints.get(_currentSet.get(_currentIndex));
 			if (hintarray != null && hintarray.length > 1){
 				if (hint.equals("word")){
-					text = _currentSet[_currentIndex];
+					text = _currentSet.get(_currentIndex);
 				}
 				if (hint.equals("phrase")){
 					text = hintarray[0];
@@ -289,7 +290,7 @@ public class MainActivity extends Activity {
         _imgView = (ImageView) findViewById(R.id.image);
         _currentIndex = 0;
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
-        _currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
+        _currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
         _scores = (Scores) getIntent().getSerializableExtra("edu.upenn.cis350.mosstalkwords.currentScores");
         
         _setScore = 0;
@@ -408,7 +409,7 @@ public class MainActivity extends Activity {
     
     private boolean checkEndOfSet(){
     	boolean end = false;
-    	if(_currentIndex >= _currentSet.length){
+    	if(_currentIndex >= _currentSet.size()){
     		end = true;
     		
     		//check if current set score is > high score, if so update
@@ -436,7 +437,7 @@ public class MainActivity extends Activity {
         case 1: {
             if (resultCode == RESULT_OK && data != null) {
                 ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                String correctAnswer = _currentSet[_currentIndex];
+                String correctAnswer = _currentSet.get(_currentIndex);
                 
                 for(String str: result)
                 {
@@ -489,7 +490,7 @@ public class MainActivity extends Activity {
 		else if(isSuccess == false && _numTries >= 2) {  //got it wrong, but time to move on
 			b.setTitle("Try the next picture!");
 			b.setIcon(R.drawable.wrong);
-			b.setMessage("The correct answer was: " + _currentSet[_currentIndex]);
+			b.setMessage("The correct answer was: " + _currentSet.get(_currentIndex));
 			
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 				
@@ -566,8 +567,10 @@ public class MainActivity extends Activity {
 	   protected void onDestroy() {
 		  _currentIndex = 0;
 		  if(soundGenerator != null){
+			  _listenerIsReady = false;
 			  soundGenerator.stop();
 			  soundGenerator.shutdown();
+			  soundGenerator = null;
 		  }
 	
 	      super.onDestroy();
@@ -582,15 +585,18 @@ public class MainActivity extends Activity {
 	   @Override
 	    protected void onPause() {
 	        super.onPause();
+	        if(soundGenerator != null){
+	        soundGenerator.stop();
 	        soundGenerator.shutdown();
 	        _listenerIsReady = false;
 	        soundGenerator = null;
+	        }
 	    }
 
 	    @Override
 	    protected void onResume() {
 	        super.onResume();
-	        soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
+	       // soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
 	    }
 
 }

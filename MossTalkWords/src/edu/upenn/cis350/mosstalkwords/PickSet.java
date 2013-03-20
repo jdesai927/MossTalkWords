@@ -1,13 +1,19 @@
 package edu.upenn.cis350.mosstalkwords;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.TreeMap;
 
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -16,6 +22,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -28,12 +35,14 @@ public class PickSet extends Activity {
 	public final static String currentSetPath = "edu.upenn.cis350.mosstalkwords.currentSetPath";
 	public final static String currentSet = "edu.upenn.cis350.mosstalkwords.currentSet";
 	public final static String currentScores = "edu.upenn.cis350.mosstalkwords.currentScores";
+	private ArrayList<String> categories;
 	private Spinner stimspinner;
 	private Spinner diffspinner;
 	private String difficulty;
 	private String category;
 	private Scores scores;
 	private TextView highscore;
+	private TreeMap<String, ArrayList<String>> catToWords;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -74,40 +83,22 @@ public class PickSet extends Activity {
 		TextView higheststreak = (TextView) findViewById(R.id.highest_streak);
 		higheststreak.setText("Highest Streak: " + Integer.toString(scores.getHighestStreak()));
 		
-		AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
+		AsyncTask<String, Integer, Boolean> downloadCatsWords = new LoadCategoriesWords().execute("");
 	}
 
 	public void onStartButtonClick(View view){
 
 		Intent i = new Intent(this, MainActivity.class);
 		i.putExtra(currentSetPath, category+difficulty);
-		i.putExtra(currentSet, getSetArray(category+difficulty));
+		i.putStringArrayListExtra(currentSet, getSet(category+difficulty));
+		Log.i("info", category+difficulty);
+		Log.i("info", catToWords.keySet().toString());
 		i.putExtra(currentScores, scores);
 		startActivity(i);
 	}
 
-	public String[] getSetArray(String key){
-
-		if (key.equals("nonlivingthingseasy")){
-			return getResources().getStringArray(R.array.nonlivingthingseasy);
-		}
-		else if(key.equals("livingthingseasy")){
-			return getResources().getStringArray(R.array.livingthingseasy);
-		}
-		else if(key.equals("nonlivingthingshard")){
-			return getResources().getStringArray(R.array.nonlivingthingshard);
-		}
-		else if(key.equals("livingthingshard")){
-			return getResources().getStringArray(R.array.livingthingshard);
-		}
-		else {//if(key.equals("nonlivingthingsmedium")){
-			return getResources().getStringArray(R.array.nonlivingthingsmedium);
-		}
-		/*
-		else if(key.equals("livingthingsmedium")){
-			return getResources().getStringArray(R.array.livingthingsmedium);
-		}
-		*/
+	public ArrayList<String> getSet(String key){
+		return catToWords.get(key);
 	}
 	public class DifficultySelectedListener implements OnItemSelectedListener {
 
@@ -141,18 +132,65 @@ public class PickSet extends Activity {
 		public void onNothingSelected(AdapterView<?> arg0) {}
 
 	}
+	
+	private class LoadCategoriesWords extends AsyncTask<String, Integer, Boolean>{
+		@Override
+		protected Boolean doInBackground(String... set) {
+			categories = new ArrayList<String>();
+			catToWords = new TreeMap<String, ArrayList<String>>();
+			boolean b = false;
+			try {
+					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/categories.txt");
+					BufferedReader categoryReader = new BufferedReader(new InputStreamReader(ur.openStream()));
+					String lineRead;
+					while ((lineRead = categoryReader.readLine()) != null){
+						b = true;
+						categories.add(lineRead);
+					}
+					categoryReader.close();
+					for (String cat: categories){
+						try{
+						URL urwords = new URL("https://s3.amazonaws.com/mosstalkdata/" + cat + "/words.txt");
+						BufferedReader wordsReader = new BufferedReader(new InputStreamReader(urwords.openStream()));
+						String word;
+						ArrayList<String> wordslist = new ArrayList<String>();
+						while ((word = wordsReader.readLine()) != null){
+							wordslist.add(word);
+						}
+						catToWords.put(cat, wordslist);
+						wordsReader.close();
+						}
+						catch(FileNotFoundException e){
+							e.printStackTrace();
+						}
+					}
+			}catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		 return b;
+		}
+		
+		@Override
+		protected void onPostExecute(Boolean result) {
+			AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
+		}
+
+	}
 
 	private class LoadOneFile extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {
 			boolean b = false;
-			String [] categories = {"nonlivingthingseasy", "nonlivingthingshard"};//, "livingthingseasy", "livingthingshard"};
 			try {
-				for (int i = 0; i< categories.length; i++){
-					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + categories[i] + 
-							"/" + getSetArray(categories[i])[0] + ".jpg");
+				for (String cat: categories ){
+					if(getSet(cat) != null){
+					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + cat + 
+							"/" + getSet(cat).get(0) + ".jpg");
 
-					File file = new File(getApplicationContext().getCacheDir(),  getSetArray(categories[i])[0] +".jpg");
+					File file = new File(getApplicationContext().getCacheDir(),  getSet(cat).get(0) +".jpg");
 					URLConnection ucon = ur.openConnection();
 					InputStream is = ucon.getInputStream();
 					BufferedInputStream bis = new BufferedInputStream(is);
@@ -164,6 +202,7 @@ public class PickSet extends Activity {
 					fos.write(baf.toByteArray());
 					fos.close();
 					b = true;
+				}
 				}
 
 			}catch (MalformedURLException e1) {
