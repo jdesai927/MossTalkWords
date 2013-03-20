@@ -45,6 +45,22 @@ public class Scores implements Serializable {
 	
 	
 	/**
+	 * Increment the total score by the amount val
+	 * @param val  the amount to increment the total score by
+	 * @return true if success, false if val < 0
+	 */
+	public boolean incTotalScore(int val) {
+		if(val > 0) {
+			total_score += val;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	
+	/**
 	 * Given a stimulus set, returns the high score for that set
 	 * @param set the name of the stimulus set
 	 * @return the high score, or -1 if set was not a valid name

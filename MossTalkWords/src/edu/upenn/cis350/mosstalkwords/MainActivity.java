@@ -55,7 +55,8 @@ public class MainActivity extends Activity {
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
 	
-	public int _score = 0;
+	public Scores _scores;
+	public int _setScore = 0;
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
@@ -185,9 +186,11 @@ public class MainActivity extends Activity {
         _currentIndex = 0;
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
         _currentSet = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-        _score = getIntent().getIntExtra("edu.upenn.cis350.mosstalkwords.newScore", 0);
+        _scores = (Scores) getIntent().getSerializableExtra("edu.upenn.cis350.mosstalkwords.currentScores");
+        
+        _setScore = 0;
         TextView st = (TextView) findViewById(R.id.score);
-    	st.setText(Integer.toString(_score));
+    	st.setText(Integer.toString(_setScore));
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
         
     	try {
@@ -296,8 +299,15 @@ public class MainActivity extends Activity {
     	boolean end = false;
     	if(_currentIndex >= _currentSet.length){
     		end = true;
+    		
+    		//check if current set score is > high score, if so update
+    		if(_setScore > _scores.getHighScore(_currentPath)) {
+    			_scores.setHighScore(_currentPath, _setScore);
+    		}
+    		_scores.incTotalScore(_setScore); //increment total score by this set's score
+    		
     		Intent i = new Intent(this, PickSet.class);
-    		i.putExtra(currentSavedScore, _score);
+    		i.putExtra("edu.upenn.cis350.mosstalkwords.currentScores", _scores);
     		startActivity(i);
     	}
     	return end;
@@ -350,9 +360,9 @@ public class MainActivity extends Activity {
 				
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
-					_score += 3-_numHintsUsed;
+					_setScore += 3-_numHintsUsed;
 		        	TextView st = (TextView) findViewById(R.id.score);
-		        	st.setText(Integer.toString(_score));
+		        	st.setText(Integer.toString(_setScore));
 		        	nextImage();
 					
 				}
