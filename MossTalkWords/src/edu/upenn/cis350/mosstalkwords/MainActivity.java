@@ -1,17 +1,24 @@
 package edu.upenn.cis350.mosstalkwords;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
+import android.speech.tts.TextToSpeech;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -33,6 +40,7 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -54,7 +62,10 @@ public class MainActivity extends Activity {
 	private Button _micButton;
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
-	
+	private boolean _listenerIsReady = false;
+	private TextToSpeech soundGenerator;
+	private TreeMap<String, String[]> hints; 
+	private int _rhymeUsed; 
 	public int _score = 0;
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
@@ -99,7 +110,7 @@ public class MainActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(String... set) {
 			boolean b = false;
-			String [] extensions = {".jpg", "_phrase.wav", "_rhyme.wav", ".wav"};
+			String [] extensions = {".jpg"};//, "_phrase.wav", "_rhyme.wav", ".wav"};
 			try {
 			 for(int j = 0; j< extensions.length; j++){
 				String extension = extensions[j];
@@ -121,6 +132,54 @@ public class MainActivity extends Activity {
 				}
 				
 			} 
+			}catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		 return b;
+		}
+		
+	}
+	
+	private class LoadHintsTask extends AsyncTask<String, Integer, Boolean>{
+		
+		@Override
+		protected Boolean doInBackground(String... set) {
+			hints = new TreeMap<String, String[]>();
+			boolean b = false;
+			try {
+					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+				"/" + "hints.txt");
+					//File file = new File(getApplicationContext().getCacheDir(),_currentSet[i]+extension);
+					BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
+					String lineRead;
+					int linenumber = 0;
+					String word = null;
+					String sentence = null;
+					String Rhyme1 = null;
+					String Rhyme2 = null;
+					while ((lineRead = hintReader.readLine()) != null){
+						switch(linenumber) {
+						case 0: word = lineRead; break;
+						case 1: sentence = lineRead; break;
+						case 2: Rhyme1 = lineRead; break;
+						case 3: Rhyme2 = lineRead;  break;
+						}
+						linenumber++;
+						if(lineRead.length()==0){ 
+							linenumber = 0;
+						}
+						if(linenumber == 4){
+							if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
+								String [] hts = {sentence, Rhyme1, Rhyme2};
+								hints.put(word, hts);
+								Log.i("info", Arrays.toString(hints.get(word)));
+							}
+						}	
+						
+					} 
 			}catch (MalformedURLException e1) {
 				e1.printStackTrace();
 			} catch (IOException e) {
@@ -177,6 +236,46 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	private void playSoundText(String hint){
+		if (_listenerIsReady == false){
+			Toast.makeText(this, "Hold on! I'm not ready yet! Try again in a second!", Toast.LENGTH_LONG).show();
+		}
+		else {
+			String text = "";
+			Log.i("info", _currentSet[_currentIndex]);
+			Log.i("info", Arrays.toString(hints.get(_currentSet[_currentIndex])));
+			String[] hintarray = hints.get(_currentSet[_currentIndex]);
+			if (hintarray != null && hintarray.length > 1){
+				if (hint.equals("word")){
+					text = _currentSet[_currentIndex];
+				}
+				if (hint.equals("phrase")){
+					text = hintarray[0];
+				}
+				if (hint.equals("rhyme")){
+					text = hintarray[_rhymeUsed+1];
+					if(_rhymeUsed == (hintarray.length-1)){
+						_rhymeUsed = 0;
+					}
+					else{
+						_rhymeUsed++;
+					}
+				}
+			}
+			Toast.makeText(this, text, Toast.LENGTH_LONG);
+			soundGenerator.speak(text, TextToSpeech.QUEUE_ADD, null);
+		}
+	}
+	
+	private class TextToSpeechListener implements TextToSpeech.OnInitListener{
+
+		@Override
+		public void onInit(int arg0) {
+			_listenerIsReady = true;
+			
+		}
+	}
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,7 +288,8 @@ public class MainActivity extends Activity {
         TextView st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_score));
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
-        
+        AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
+        soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
     	try {
 			loadImage();
 		} catch (InterruptedException e) {
@@ -216,7 +316,7 @@ public class MainActivity extends Activity {
         
         _hintPhraseButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("_phrase");
+				playSoundText("phrase");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;	
 			}
@@ -224,7 +324,7 @@ public class MainActivity extends Activity {
         
         _hintRhymeButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("_rhyme");
+				playSoundText("rhyme");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;
 			}
@@ -232,7 +332,7 @@ public class MainActivity extends Activity {
         
         _hintPronounceButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				playSound("");
+				playSoundText("word");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;
 			}
@@ -265,9 +365,10 @@ public class MainActivity extends Activity {
         
     }
     
+    
     public void nextImage(){
     	_currentIndex++;
-		
+		_rhymeUsed = 0;
 		if(checkEndOfSet() == true){
 			return;
 		}
@@ -426,6 +527,11 @@ public class MainActivity extends Activity {
 	   @Override
 	   protected void onDestroy() {
 		  _currentIndex = 0;
+		  if(soundGenerator != null){
+			  soundGenerator.stop();
+			  soundGenerator.shutdown();
+		  }
+	
 	      super.onDestroy();
 	      try {
 	         trimCache(this);
@@ -434,5 +540,19 @@ public class MainActivity extends Activity {
 	         e.printStackTrace();
 	      }
 	   }
+	   
+	   @Override
+	    protected void onPause() {
+	        super.onPause();
+	        soundGenerator.shutdown();
+	        _listenerIsReady = false;
+	        soundGenerator = null;
+	    }
+
+	    @Override
+	    protected void onResume() {
+	        super.onResume();
+	        soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
+	    }
 
 }
