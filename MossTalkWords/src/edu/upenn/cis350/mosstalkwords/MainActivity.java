@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
 	
 	public Scores _scores;
 	public int _setScore = 0;
+	public int _streak = 0;
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
@@ -189,6 +190,7 @@ public class MainActivity extends Activity {
         _scores = (Scores) getIntent().getSerializableExtra("edu.upenn.cis350.mosstalkwords.currentScores");
         
         _setScore = 0;
+        _streak = 0;
         TextView st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_setScore));
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
@@ -262,6 +264,10 @@ public class MainActivity extends Activity {
         
         _skipButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				if(_scores.getHighestStreak() < _streak)
+					_scores.setHighestStreak(_streak);
+				
+				_streak = 0;
 				nextImage();
 			}
 		});
@@ -304,6 +310,11 @@ public class MainActivity extends Activity {
     		if(_setScore > _scores.getHighScore(_currentPath)) {
     			_scores.setHighScore(_currentPath, _setScore);
     		}
+    		
+    		//check highest streak compared to current streak
+    		if(_scores.getHighestStreak() < _streak)
+				_scores.setHighestStreak(_streak);
+			
     		_scores.incTotalScore(_setScore); //increment total score by this set's score
     		
     		Intent i = new Intent(this, PickSet.class);
@@ -361,6 +372,7 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
+					_streak++;
 		        	TextView st = (TextView) findViewById(R.id.score);
 		        	st.setText(Integer.toString(_setScore));
 		        	nextImage();
@@ -369,7 +381,7 @@ public class MainActivity extends Activity {
 			});
 			
 		}
-		else if(isSuccess == false && _numTries >= 3) {  //got it wrong, but time to move on
+		else if(isSuccess == false && _numTries >= 2) {  //got it wrong, but time to move on
 			b.setTitle("Try the next picture!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("The correct answer was: " + _currentSet[_currentIndex]);
@@ -378,6 +390,12 @@ public class MainActivity extends Activity {
 				
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
+					
+					//check if streak that just ended was the highest
+					if(_scores.getHighestStreak() < _streak)
+						_scores.setHighestStreak(_streak);
+					
+					_streak = 0;
 					nextImage();
 				}
 			});
@@ -392,6 +410,12 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="again";
 					_numTries++;
+					
+					//check if streak that just ended was the highest
+					if(_scores.getHighestStreak() < _streak)
+						_scores.setHighestStreak(_streak);
+					
+					_streak = 0;
 				}
 			});
 		}

@@ -8,6 +8,7 @@ public class Scores implements Serializable {
 	
 	private int total_score;
 	private int [] high_scores;
+	private int highest_streak;
 		
 	/**
 	 * Initialize a new Scores object for keeping track of a user's scores.
@@ -134,6 +135,32 @@ public class Scores implements Serializable {
 		
 	}
 	
+	
+	
+	/**
+	 * Returns the highest streak (over all of the 
+	 * games the user has played)
+	 * @return the highest streak of correct answers
+	 */
+	public int getHighestStreak() {
+		return highest_streak;
+	}
+	
+	
+	/**
+	 * Set the highest streak of correct answers
+	 * @param val the new value 
+	 * @return true if success, false if val is < 0
+	 */
+	public boolean setHighestStreak(int val) {
+		if(val > 0) {
+			highest_streak = val;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 	
 
 }

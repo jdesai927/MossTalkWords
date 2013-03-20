@@ -71,6 +71,9 @@ public class PickSet extends Activity {
 		TextView totalscore = (TextView) findViewById(R.id.total_score);
 		totalscore.setText("Total Score: " + Integer.toString(scores.getTotalScore()));
 		
+		TextView higheststreak = (TextView) findViewById(R.id.highest_streak);
+		higheststreak.setText("Highest Streak: " + Integer.toString(scores.getHighestStreak()));
+		
 		AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
 	}
 

@@ -50,7 +50,15 @@
             android:id="@+id/total_score"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="Total Score: 0"
+            android:textSize="15sp" />
+        
+        <TextView
+            android:id="@+id/highest_streak"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Highest Streak: 0"
             android:textSize="15sp" />
         
 		<Button
