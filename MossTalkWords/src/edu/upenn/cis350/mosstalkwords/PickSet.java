@@ -94,9 +94,17 @@ public class PickSet extends Activity {
 		else if(key.equals("nonlivingthingshard")){
 			return getResources().getStringArray(R.array.nonlivingthingshard);
 		}
-		else{
+		else if(key.equals("livingthingshard")){
 			return getResources().getStringArray(R.array.livingthingshard);
 		}
+		else {//if(key.equals("nonlivingthingsmedium")){
+			return getResources().getStringArray(R.array.nonlivingthingsmedium);
+		}
+		/*
+		else if(key.equals("livingthingsmedium")){
+			return getResources().getStringArray(R.array.livingthingsmedium);
+		}
+		*/
 	}
 	public class DifficultySelectedListener implements OnItemSelectedListener {
 
