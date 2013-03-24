@@ -76,10 +76,12 @@ public class ScoresDbAdapter extends SQLiteOpenHelper {
     	Cursor cursor = db.query(TABLE_SCORES, new String[] {KEY_NAME, KEY_SCORE}, KEY_NAME + "= '" + name + "'", null, null, null, null);
     	if (cursor != null)
     	{
-    		cursor.moveToFirst();
-    		int score = cursor.getInt(cursor.getColumnIndex(KEY_SCORE));
-    		cursor.close();
-    		return score;
+    		if(cursor.moveToFirst())
+    		{
+	    		int score = cursor.getInt(cursor.getColumnIndex(KEY_SCORE));
+	    		cursor.close();
+	    		return score;
+    		}
     	}
     	return -1;
     }

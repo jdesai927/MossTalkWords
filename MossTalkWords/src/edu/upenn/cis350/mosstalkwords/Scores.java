@@ -5,9 +5,7 @@ import java.io.Serializable;
 import android.content.Context;
 import android.database.Cursor;
 
-public class Scores implements Serializable {
-
-	private static final long serialVersionUID = -3552875309528922831L; //for serialization
+public class Scores{
 
 	private int total_score;
 	private int [] high_scores;
@@ -107,29 +105,6 @@ public class Scores implements Serializable {
 			scoresDb.addScore(set+"score", 0);
 			return 0;
 		}
-		
-//		if(set.equals("livingthingseasy")){
-//			return high_scores[0];
-//		}
-//		else if (set.equals("livingthingsmedium")) {
-//			return high_scores[1];
-//		}
-//		else if (set.equals("livingthingshard")) {
-//			return high_scores[2];
-//		}
-//		else if(set.equals("nonlivingthingseasy")){
-//			return high_scores[3];
-//		}
-//		else if (set.equals("nonlivingthingsmedium")) {
-//			return high_scores[4];
-//		}
-//		else if (set.equals("nonlivingthingshard")) {
-//			return high_scores[5];
-//		}
-//		else {
-//			return -1;
-//		}
-
 	}
 
 
@@ -238,3 +213,4 @@ public class Scores implements Serializable {
 
 
 }
+

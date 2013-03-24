@@ -48,8 +48,9 @@ public class PickSet extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_pick);
 		
+		setContentView(R.layout.activity_pick);
+
 		stimspinner = (Spinner) findViewById(R.id.set_spinner);
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
 				R.array.stimulus_array, android.R.layout.simple_spinner_item);
@@ -63,16 +64,15 @@ public class PickSet extends Activity {
 		diffspinner.setAdapter(diffadapter);
 		stimspinner.setOnItemSelectedListener(new CategorySelectedListener());
 		diffspinner.setOnItemSelectedListener(new DifficultySelectedListener());
-
-
+		
+		scores = new Scores(getApplicationContext());
+	
+		
 		//initialize category and difficulty
 		category = "livingthings";
 		difficulty = "easy";
-
+		
 		AsyncTask<String, Integer, Boolean> downloadCatsWords = new LoadCategoriesWords().execute("");
-		
-		scores = new Scores(getApplicationContext());
-		
 	}
 	
 	//Method that returns the percentage of the category that's been completed (eg. 8/10, 0/10 etc.)
@@ -112,8 +112,7 @@ public class PickSet extends Activity {
 		public void onNothingSelected(AdapterView<?> arg0) {}
 
 	}
-
-
+	
 	public class CategorySelectedListener implements OnItemSelectedListener {
 
 		@SuppressLint("DefaultLocale")
@@ -122,7 +121,10 @@ public class PickSet extends Activity {
 			category = category.replaceAll("\\s","");
 			category = category.toLowerCase();
 		}
-
+		
+		protected void onPostExecute(Boolean result) {
+			AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
+		}
 		@Override
 		public void onNothingSelected(AdapterView<?> arg0) {}
 

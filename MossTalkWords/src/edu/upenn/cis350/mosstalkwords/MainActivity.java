@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -64,6 +65,7 @@ public class MainActivity extends Activity {
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
 
+
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
 	private TreeMap<String, String[]> hints; 
@@ -77,12 +79,11 @@ public class MainActivity extends Activity {
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
-	
-	public int _numCorrect = 0;
-	
+	private ArrayList<String> _currentSet;
+
 	public AlertDialog ad;
 
-	private ArrayList<String> _currentSet = new ArrayList<String>();
+	public int _numCorrect = 0;
 
 	private String buildUrl(String extension) {
 		_currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
@@ -115,7 +116,7 @@ public class MainActivity extends Activity {
 			return "App context";
 		}
 	}
-
+	
 	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {
@@ -141,7 +142,6 @@ public class MainActivity extends Activity {
 					fos.close();
 					b = true;
 				}
-
 				}
 			} 
 			}catch (MalformedURLException e1) {
@@ -149,7 +149,6 @@ public class MainActivity extends Activity {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 		 return b;
 		}
 
@@ -201,7 +200,7 @@ public class MainActivity extends Activity {
 		}
 
 	}
-
+	
 	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		 options.inSampleSize = 2;
@@ -214,7 +213,7 @@ public class MainActivity extends Activity {
 		 catch(Exception e){
 			 e.printStackTrace();
 		 }
-
+			
 		 if (myBitmap != null){
 		_imgView.setScaleType(ScaleType.FIT_XY);
 		 _imgView.setImageBitmap(myBitmap);
@@ -222,13 +221,13 @@ public class MainActivity extends Activity {
 	}
 
 
-	private void playSound(String hint) {
 
+	private void playSound(String hint) {
 		try {
 			if (_mediaPlayer.isPlaying()) {
 				_mediaPlayer.stop();
 			}
-
+			
 			_mediaPlayer.reset();
 			//_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
@@ -286,7 +285,7 @@ public class MainActivity extends Activity {
 
 		}
 	}
-
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -294,8 +293,7 @@ public class MainActivity extends Activity {
         _imgView = (ImageView) findViewById(R.id.image);
         _currentIndex = 0;
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
-        String[] array = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-        Collections.addAll(_currentSet, array);
+        _currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
         
         _scores = new Scores(this.getApplicationContext());
         
@@ -381,7 +379,7 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				if(_scores.getHighestStreak() < _streak)
 					_scores.setHighestStreak(_streak);
-
+				
 				_streak = 0;
 				nextImage();
 			}
@@ -423,24 +421,24 @@ public class MainActivity extends Activity {
     		end = true;
     		
     		//check if current set score is > high score, if so update
-    		if(_setScore > _scores.getHighScore(_currentPath)) {
-    			_scores.setHighScore(_currentPath, _setScore);
-    		}
-    		
-    		//check highest streak compared to current streak
-    		if(_scores.getHighestStreak() < _streak)
-				_scores.setHighestStreak(_streak);
-
-//    		_scores.incTotalScore(_setScore); //increment total score by this set's score
-  		  	
-    		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
-    		if(_numCorrect > prevNumOfCorrectAnswers)
-    		{
-    			_scores.setNumCompleted(_currentPath, _numCorrect);
-    		}
-    		
-  		    _scores.setTotalScore(_totalScore);
-  		    _scores.closeDb();
+//    		if(_setScore > _scores.getHighScore(_currentPath)) {
+//    			_scores.setHighScore(_currentPath, _setScore);
+//    		}
+//    		
+//    		//check highest streak compared to current streak
+//    		if(_scores.getHighestStreak() < _streak)
+//				_scores.setHighestStreak(_streak);
+//
+////    		_scores.incTotalScore(_setScore); //increment total score by this set's score
+//  		  	
+//    		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
+//    		if(_numCorrect > prevNumOfCorrectAnswers)
+//    		{
+//    			_scores.setNumCompleted(_currentPath, _numCorrect);
+//    		}
+//    		
+//  		    _scores.setTotalScore(_totalScore);
+//  		    _scores.closeDb();
   		    finish();
     	}
     	return end;
@@ -498,11 +496,12 @@ public class MainActivity extends Activity {
 					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
 					_totalScore += 3-_numHintsUsed;
+
 					_streak++;
 		        	TextView st = (TextView) findViewById(R.id.score);
+
 		        	st.setText(Integer.toString(_totalScore));
 		        	nextImage();
-
 				}
 			});
 
@@ -511,7 +510,7 @@ public class MainActivity extends Activity {
 			b.setTitle("Try the next picture!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("The correct answer was: " + _currentSet.get(_currentIndex));
-
+			
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
@@ -520,7 +519,11 @@ public class MainActivity extends Activity {
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak)
 						_scores.setHighestStreak(_streak);
-
+					
+					//check if streak that just ended was the highest
+					if(_scores.getHighestStreak() < _streak)
+						_scores.setHighestStreak(_streak);
+					
 					_streak = 0;
 					nextImage();
 				}
@@ -540,7 +543,6 @@ public class MainActivity extends Activity {
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak)
 						_scores.setHighestStreak(_streak);
-
 					_streak = 0;
 				}
 			});
@@ -549,6 +551,7 @@ public class MainActivity extends Activity {
 		ad = b.create();
 		ad.show();  //show the dialog
 
+		
 		//play the audio feedback
 		if(isSuccess) {
 			MediaPlayer mp = MediaPlayer.create(this, R.raw.correct);
@@ -556,7 +559,7 @@ public class MainActivity extends Activity {
 		}
 
 	}
-
+	
 	 public static void trimCache(Context context) {
 	      try {
 	         File dir = context.getCacheDir();
