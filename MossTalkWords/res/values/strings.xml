@@ -13,10 +13,21 @@
     </string-array>
     <string-array name="difficulty_array">
         <item>Easy</item>
+        <item>Medium</item>
         <item>Hard</item>
     </string-array>
     <string-array name="nonlivingthingseasy">
-        
+        <item >banana</item>
+        <item >box</item>
+        <item >table</item>
+        <item >chair</item>
+        <item >book</item>
+        <item >door</item>
+        <item >clock</item>
+        <item >cup</item>
+        <item >plate</item>
+        <item >hat</item>
+        <item >grapes</item>
     </string-array>
     <string-array name="livingthingseasy">
         
@@ -36,6 +47,19 @@
     </string-array>
     <string-array name="livingthingshard">
         
+    </string-array>
+    
+        <string-array name="nonlivingthingsmedium">
+        <item>darts</item>
+        <item>pyramid</item>
+        <item>bicycle</item>
+        <item>camera</item>
+        <item>scissors</item>
+        <item>elevator</item>
+        <item>bubble</item>
+        <item>shovel</item>
+        <item>cinnamon</item>
+        <item>radio</item>
     </string-array>
 
 </resources>

@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.TreeMap;
@@ -67,7 +68,7 @@ public class MainActivity extends Activity {
 	private TextToSpeech soundGenerator;
 	private TreeMap<String, String[]> hints; 
 	private int _rhymeUsed; 
-	public int _score = 0;
+	public int _totalScore = 0;
 
 
 	public Scores _scores;
@@ -76,9 +77,12 @@ public class MainActivity extends Activity {
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
+	
+	public int _numCorrect = 0;
+	
 	public AlertDialog ad;
 
-	private ArrayList<String> _currentSet;
+	private ArrayList<String> _currentSet = new ArrayList<String>();
 
 	private String buildUrl(String extension) {
 		_currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
@@ -290,14 +294,19 @@ public class MainActivity extends Activity {
         _imgView = (ImageView) findViewById(R.id.image);
         _currentIndex = 0;
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
-        _currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-//        _scores = (Scores) getIntent().getSerializableExtra("edu.upenn.cis350.mosstalkwords.currentScores");
+        String[] array = getIntent().getStringArrayExtra("edu.upenn.cis350.mosstalkwords.currentSet");
+        Collections.addAll(_currentSet, array);
+        
         _scores = new Scores(this.getApplicationContext());
+        
+        _totalScore = _scores.getTotalScore();
         
         _setScore = 0;
         _streak = 0;
+        
         TextView st = (TextView) findViewById(R.id.score);
-    	st.setText(Integer.toString(_setScore));
+    	st.setText(Integer.toString(_totalScore));
+    	
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
         AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
         soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
@@ -423,15 +432,16 @@ public class MainActivity extends Activity {
 				_scores.setHighestStreak(_streak);
 
 //    		_scores.incTotalScore(_setScore); //increment total score by this set's score
+  		  	
+    		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
+    		if(_numCorrect > prevNumOfCorrectAnswers)
+    		{
+    			_scores.setNumCompleted(_currentPath, _numCorrect);
+    		}
     		
-  		    int oldTotal = _scores.getTotalScore();
-  		    int currentTotal = oldTotal + _setScore;
-  		  
-  		    _scores.setTotalScore(currentTotal);
-    		
-    		Intent i = new Intent(this, PickSet.class);
-    		i.putExtra("edu.upenn.cis350.mosstalkwords.currentScores", _scores);
-    		startActivity(i);
+  		    _scores.setTotalScore(_totalScore);
+  		    _scores.closeDb();
+  		    finish();
     	}
     	return end;
     }
@@ -475,6 +485,9 @@ public class MainActivity extends Activity {
 
 
 		if(isSuccess) {  //only give them continue button if they got it right
+			
+			_numCorrect++;
+			
 			b.setTitle("Correct!");
 			b.setIcon(R.drawable.checkmark);
 			b.setMessage("You said: " + word_said);
@@ -484,9 +497,10 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) {
 					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
+					_totalScore += 3-_numHintsUsed;
 					_streak++;
 		        	TextView st = (TextView) findViewById(R.id.score);
-		        	st.setText(Integer.toString(_setScore));
+		        	st.setText(Integer.toString(_totalScore));
 		        	nextImage();
 
 				}
@@ -579,7 +593,25 @@ public class MainActivity extends Activity {
 			  soundGenerator = null;
 		  }
 		  
+  		  if(_setScore > _scores.getHighScore(_currentPath)) {
+			_scores.setHighScore(_currentPath, _setScore);
+		  }
+		
+		  //check highest streak compared to current streak
+		  if(_scores.getHighestStreak() < _streak)
+			_scores.setHighestStreak(_streak);
+		  	
+		  int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
+		  if(_numCorrect > prevNumOfCorrectAnswers)
+		  {
+			_scores.setNumCompleted(_currentPath, _numCorrect);
+		  }
+		  
+		  _scores.setTotalScore(_totalScore);
+
+		  _scores.closeDb();
 	      super.onDestroy();
+	      
 	      try {
 	         trimCache(this);
 	      } catch (Exception e) {

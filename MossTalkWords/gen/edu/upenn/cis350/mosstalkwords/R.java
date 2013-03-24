@@ -14,6 +14,7 @@ public final class R {
         public static final int livingthingshard=0x7f060005;
         public static final int nonlivingthingseasy=0x7f060002;
         public static final int nonlivingthingshard=0x7f060004;
+        public static final int nonlivingthingsmedium=0x7f060006;
         public static final int stimulus_array=0x7f060000;
     }
     public static final class attr {
