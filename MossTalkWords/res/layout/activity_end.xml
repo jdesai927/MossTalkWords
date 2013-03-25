@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#04346C">
+
+    <LinearLayout
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="Set Complete!"
+            android:textSize="25sp" 
+            android:textColor="#FF9C00"/>
+        
+        <TextView
+            android:id="@+id/endset_set"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="Living Things Easy"
+            android:textSize="22sp" 
+            android:textColor="#FF9C00"/>
+        
+        <TextView
+            android:id="@+id/endset_setscore"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Set Score: "
+            android:textSize="20sp" 
+            android:textColor="#FFB540"/>
+        
+        <TextView
+            android:id="@+id/endset_highscore"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="High Score: "
+            android:textSize="20sp" 
+            android:textColor="#FFB540"/>
+
+        <TextView
+            android:id="@+id/endset_totalscore"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Score: "
+            android:layout_marginTop="10dp"
+            android:textSize="20sp" 
+            android:textColor="#FFB540"/>
+        
+        <TextView
+            android:id="@+id/endset_streak"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Longest Streak: "
+            android:textSize="20sp" 
+            android:textColor="#FFB540"/>
+        
+		<Button
+            android:id="@+id/endset_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="20dp"
+            android:onClick="onEndButtonClick"
+            android:text="Finish" />
+    </LinearLayout>
+
+</RelativeLayout>

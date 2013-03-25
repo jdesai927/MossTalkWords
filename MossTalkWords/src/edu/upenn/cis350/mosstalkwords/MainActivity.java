@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
 	public Scores _scores;
 	public int _setScore = 0;
 	public int _streak = 0;
+	public boolean newStreak = false;
 	public int _numHintsUsed = 0;
 	private int _numTries = 0;
 	private String _feedbackResult = "";
@@ -377,8 +378,10 @@ public class MainActivity extends Activity {
         
         _skipButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if(_scores.getHighestStreak() < _streak)
+				if(_scores.getHighestStreak() < _streak) {
 					_scores.setHighestStreak(_streak);
+					newStreak = true;
+				}
 				
 				_streak = 0;
 				nextImage();
@@ -419,27 +422,32 @@ public class MainActivity extends Activity {
     	boolean end = false;
     	if(_currentIndex >= _currentSet.size()){
     		end = true;
+
+    		//update scores info in db so that EndSet can get correct updated results
+    		if(_setScore > _scores.getHighScore(_currentPath)) {
+    			_scores.setHighScore(_currentPath, _setScore);
+    		}
+
+    		//check highest streak compared to current streak
+    		if(_scores.getHighestStreak() < _streak) {
+    			_scores.setHighestStreak(_streak);
+    			newStreak = true;
+    		}
     		
-    		//check if current set score is > high score, if so update
-//    		if(_setScore > _scores.getHighScore(_currentPath)) {
-//    			_scores.setHighScore(_currentPath, _setScore);
-//    		}
-//    		
-//    		//check highest streak compared to current streak
-//    		if(_scores.getHighestStreak() < _streak)
-//				_scores.setHighestStreak(_streak);
-//
-////    		_scores.incTotalScore(_setScore); //increment total score by this set's score
-//  		  	
-//    		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
-//    		if(_numCorrect > prevNumOfCorrectAnswers)
-//    		{
-//    			_scores.setNumCompleted(_currentPath, _numCorrect);
-//    		}
-//    		
-//  		    _scores.setTotalScore(_totalScore);
-//  		    _scores.closeDb();
-  		    finish();
+    		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
+    		if(_numCorrect > prevNumOfCorrectAnswers)
+    		{
+    			_scores.setNumCompleted(_currentPath, _numCorrect);
+    		}
+
+    		_scores.setTotalScore(_totalScore);
+
+    		Intent i = new Intent(this, EndSet.class);
+    		i.putExtra("set", _currentPath);
+    		i.putExtra("setscore", _setScore);
+    		i.putExtra("newstreak", newStreak);
+    		startActivityForResult(i,2);
+
     	}
     	return end;
     }
@@ -448,7 +456,7 @@ public class MainActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-        case 1: {
+        case 1:  //speech recognition result
             if (resultCode == RESULT_OK && data != null) {
                 ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                 String correctAnswer = _currentSet.get(_currentIndex);
@@ -464,7 +472,16 @@ public class MainActivity extends Activity {
                 giveFeedback(false, result.get(0));
             }
             break;
-        }
+        
+        
+        case 2: //endset result
+        	if(resultCode == RESULT_OK) {
+        		
+        		//construct intent with number of correct answers to pass back to pickset
+        		
+        		finish();
+        	}
+        
         }
     }
     
@@ -517,12 +534,10 @@ public class MainActivity extends Activity {
 					_feedbackResult="continue";
 
 					//check if streak that just ended was the highest
-					if(_scores.getHighestStreak() < _streak)
+					if(_scores.getHighestStreak() < _streak) {
 						_scores.setHighestStreak(_streak);
-					
-					//check if streak that just ended was the highest
-					if(_scores.getHighestStreak() < _streak)
-						_scores.setHighestStreak(_streak);
+						newStreak = true;
+					}
 					
 					_streak = 0;
 					nextImage();
@@ -541,8 +556,11 @@ public class MainActivity extends Activity {
 					_numTries++;
 
 					//check if streak that just ended was the highest
-					if(_scores.getHighestStreak() < _streak)
+					if(_scores.getHighestStreak() < _streak) {
 						_scores.setHighestStreak(_streak);
+						newStreak = true;
+					}
+					
 					_streak = 0;
 				}
 			});
@@ -595,22 +613,6 @@ public class MainActivity extends Activity {
 			  soundGenerator.shutdown();
 			  soundGenerator = null;
 		  }
-		  
-  		  if(_setScore > _scores.getHighScore(_currentPath)) {
-			_scores.setHighScore(_currentPath, _setScore);
-		  }
-		
-		  //check highest streak compared to current streak
-		  if(_scores.getHighestStreak() < _streak)
-			_scores.setHighestStreak(_streak);
-		  	
-		  int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
-		  if(_numCorrect > prevNumOfCorrectAnswers)
-		  {
-			_scores.setNumCompleted(_currentPath, _numCorrect);
-		  }
-		  
-		  _scores.setTotalScore(_totalScore);
 
 		  _scores.closeDb();
 	      super.onDestroy();
