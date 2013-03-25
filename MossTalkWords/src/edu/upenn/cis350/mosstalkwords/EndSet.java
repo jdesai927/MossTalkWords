@@ -45,7 +45,7 @@ public class EndSet extends Activity {
 		TextView streaktext = (TextView) findViewById(R.id.endset_streak);
 		streaktext.setText("Longest Streak: " + scores.getHighestStreak());
 		if(newStreak && scores.getHighestStreak() > 0) {
-			//highlight the fact that they got a new streak
+			//highlight the fact that they got a new streak 
 			streaktext.setTextColor(Color.rgb(20, 230, 50));
 		}
 		
