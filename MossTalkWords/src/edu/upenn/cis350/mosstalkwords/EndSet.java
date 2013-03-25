@@ -1,10 +1,8 @@
 package edu.upenn.cis350.mosstalkwords;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -33,8 +31,9 @@ public class EndSet extends Activity {
 		//the high score
 		TextView highscoretext = (TextView) findViewById(R.id.endset_highscore);
 		highscoretext.setText("High Score: " + scores.getHighScore(set));
-		if(setscore == scores.getHighScore(set)) {  //highlight the fact that they got a new high score
-			highscoretext.setTextColor(Color.GREEN);
+		if(setscore == scores.getHighScore(set) && setscore > 0) {
+			//highlight the fact that they got a new high score
+			highscoretext.setTextColor(Color.rgb(20, 230, 50));
 		}
 		
 		//the total score
@@ -45,8 +44,9 @@ public class EndSet extends Activity {
 		newStreak = getIntent().getBooleanExtra("newstreak", false);
 		TextView streaktext = (TextView) findViewById(R.id.endset_streak);
 		streaktext.setText("Longest Streak: " + scores.getHighestStreak());
-		if(newStreak) {  //highlight the fact that they got a new streak
-			streaktext.setTextColor(Color.GREEN);
+		if(newStreak && scores.getHighestStreak() > 0) {
+			//highlight the fact that they got a new streak
+			streaktext.setTextColor(Color.rgb(20, 230, 50));
 		}
 		
 	}
