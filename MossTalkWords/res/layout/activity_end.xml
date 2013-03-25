@@ -79,7 +79,8 @@
             android:layout_marginTop="20dp"
             android:gravity="center"
             android:onClick="onEndButtonClick"
-            android:text="Finish" />
+            android:text="Finish" 
+            android:textSize="20sp"/>
     </LinearLayout>
 
 </RelativeLayout>
