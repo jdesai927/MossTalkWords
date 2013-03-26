@@ -190,7 +190,7 @@ public class Scores{
 		
 		if(val > 0) {
 			highest_streak = val;
-			int score = scoresDb.getScore("higestscore");
+			int score = scoresDb.getScore("higheststreak");
 			if(score != -1)
 			{
 				scoresDb.updateScore("higheststreak", highest_streak);

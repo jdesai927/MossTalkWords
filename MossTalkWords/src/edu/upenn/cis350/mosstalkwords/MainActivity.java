@@ -420,25 +420,6 @@ public class MainActivity extends Activity {
     	if(_currentIndex >= _currentSet.size()){
     		end = true;
     		
-    		//check if current set score is > high score, if so update
-//    		if(_setScore > _scores.getHighScore(_currentPath)) {
-//    			_scores.setHighScore(_currentPath, _setScore);
-//    		}
-//    		
-//    		//check highest streak compared to current streak
-//    		if(_scores.getHighestStreak() < _streak)
-//				_scores.setHighestStreak(_streak);
-//
-////    		_scores.incTotalScore(_setScore); //increment total score by this set's score
-//  		  	
-//    		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
-//    		if(_numCorrect > prevNumOfCorrectAnswers)
-//    		{
-//    			_scores.setNumCompleted(_currentPath, _numCorrect);
-//    		}
-//    		
-//  		    _scores.setTotalScore(_totalScore);
-//  		    _scores.closeDb();
   		    finish();
     	}
     	return end;
@@ -613,6 +594,7 @@ public class MainActivity extends Activity {
 		  _scores.setTotalScore(_totalScore);
 
 		  _scores.closeDb();
+		  
 	      super.onDestroy();
 	      
 	      try {
