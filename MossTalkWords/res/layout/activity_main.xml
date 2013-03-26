@@ -89,6 +89,14 @@ tools:context=".MainActivity" >
 		android:layout_height="75dp">
 	    
 	    <Button 
+	        android:id="@+id/helpbutton"
+	        android:layout_alignParentLeft="true"
+	        android:layout_width="100dp"
+	        android:textSize="25dp" 
+	        android:layout_height="100dp"
+	        android:text="Help"/>
+	    
+	    <Button 
 	        android:id="@+id/micbutton"
 	        android:layout_centerInParent="true"
 	        android:background="@drawable/mic"

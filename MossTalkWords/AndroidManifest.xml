@@ -28,6 +28,9 @@
         <activity android:name="edu.upenn.cis350.mosstalkwords.MainActivity" 
             android:screenOrientation="portrait"/>
         
+        <activity android:name="edu.upenn.cis350.mosstalkwords.HelpTextActivity"
+            android:screenOrientation="portrait"/>
+        
         <activity android:name="edu.upenn.cis350.mosstalkwords.EndSet" 
             android:screenOrientation="portrait"/>
         

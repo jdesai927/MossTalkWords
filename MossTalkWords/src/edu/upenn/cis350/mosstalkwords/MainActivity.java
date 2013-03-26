@@ -42,13 +42,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
@@ -66,6 +62,7 @@ public class MainActivity extends Activity {
 	private Button _hintPronounceButton;
 	private Button _micButton;
 	private Button _skipButton;
+	private Button _helpButton;
 	private MediaPlayer _mediaPlayer;
 	private Bitmap currBitmap = null;
 
@@ -141,6 +138,7 @@ public class MainActivity extends Activity {
         _hintPronounceButton = (Button) findViewById(R.id.hintbuttonc);
         _micButton = (Button) findViewById(R.id.micbutton);
         _skipButton = (Button) findViewById(R.id.skipbutton);
+        _helpButton = (Button) findViewById(R.id.helpbutton);
         
       
         _mediaPlayer = new MediaPlayer();
@@ -196,6 +194,13 @@ public class MainActivity extends Activity {
 				
 				_streak = 0;
 				nextImage();
+			}
+		});
+        
+        _helpButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent i = new Intent(getApplicationContext(), HelpTextActivity.class);
+				startActivity(i);
 			}
 		});
         

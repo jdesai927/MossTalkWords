@@ -54,10 +54,6 @@ public class PickSet extends Activity {
 		
 		setContentView(R.layout.activity_pick);
 		
-		
-		
-		
-		
 		scores = new Scores(getApplicationContext());
 	
 		
