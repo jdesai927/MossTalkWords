@@ -35,7 +35,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -43,10 +46,18 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
@@ -70,7 +81,7 @@ public class MainActivity extends Activity {
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
 	private TreeMap<String, String[]> hints; 
-	private int _rhymeUsed; 
+	public int _rhymeUsed; 
 	public int _totalScore = 0;
 
 
@@ -79,12 +90,15 @@ public class MainActivity extends Activity {
 	public int _streak = 0;
 	public boolean newStreak = false;
 	public int _numHintsUsed = 0;
-	private int _numTries = 0;
+	public int _numTries = 0;
 	private String _feedbackResult = "";
 	private ArrayList<String> _currentSet;
 
 	public AlertDialog ad;
 	public int _numCorrect = 0;
+	
+	private AsyncTask<String, Integer, Boolean> downloadHints;
+	private AsyncTask<String, Integer, Boolean> downloadFiles;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,8 +121,9 @@ public class MainActivity extends Activity {
     	st.setText(Integer.toString(_totalScore));
     	
     	//download images, download hints
-    	AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
-        AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
+    	downloadHints = new LoadHintsTask().execute("");
+        downloadFiles = new LoadFilesTask().execute("");
+        
         //create TextToSpeech
         if(soundGenerator == null){
         soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
@@ -298,6 +313,7 @@ public class MainActivity extends Activity {
 	
 	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
 		currBitmap = null;
+		Bitmap nextBitmap = null;
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		Log.i("info", buildCachePath(".jpg"));
 		if(!(new File(buildCachePath(".jpg"))).exists()){
@@ -324,16 +340,52 @@ public class MainActivity extends Activity {
 					"/" +_currentSet.get(_currentIndex)+ ".jpg");
 			Drawable drawd = atd.get();
 			if (drawd != null){
-			_imgView.setImageDrawable(drawd);
+				Bitmap bitmap = drawableToBitmap(drawd);
+				imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap);
 			}
 		}
 		if (currBitmap != null){
 			//_imgView.setScaleType(ScaleType.CENTER_INSIDE);
-			_imgView.setImageBitmap(currBitmap);
+			imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
 		}
 		
 	}
 	
+	public static Bitmap drawableToBitmap (Drawable drawable) {
+	    if (drawable instanceof BitmapDrawable) {
+	        return ((BitmapDrawable)drawable).getBitmap();
+	    }
+	    
+	    Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Config.ARGB_8888);
+	    Canvas canvas = new Canvas(bitmap); 
+	    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+	    drawable.draw(canvas);
+
+	    return bitmap;
+	}
+	
+	public static void imageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
+        final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out); 
+        final Animation anim_in  = AnimationUtils.loadAnimation(c, android.R.anim.fade_in); 
+        anim_out.setAnimationListener(new AnimationListener()
+        {
+            @Override public void onAnimationStart(Animation animation) {}
+            @Override public void onAnimationRepeat(Animation animation) {}
+            @Override public void onAnimationEnd(Animation animation)
+            {
+                v.setImageBitmap(new_image); 
+                anim_in.setAnimationListener(new AnimationListener() {
+                    @Override public void onAnimationStart(Animation animation) {}
+                    @Override public void onAnimationRepeat(Animation animation) {}
+                    @Override public void onAnimationEnd(Animation animation) {}
+                });
+                v.startAnimation(anim_in);
+            }
+        });
+        v.startAnimation(anim_out);
+    }
+	
+
 	private void playSoundText(String hint){
 		if (_listenerIsReady == false){
 			Toast.makeText(this, "Hold on! I'm not ready yet! Try again in a second!", Toast.LENGTH_SHORT).show();
@@ -417,6 +469,8 @@ public class MainActivity extends Activity {
     			newStreak = true;
     		}
     		
+  		    finish();
+  		    
     		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
     		if(_numCorrect > prevNumOfCorrectAnswers)
     		{
@@ -647,5 +701,14 @@ public class MainActivity extends Activity {
 			}
 
 			}    
+		
+		
+		public AsyncTask.Status getDownloadHintsStatus() {
+			return downloadHints.getStatus();
+		}
+		
+		public AsyncTask.Status getDownloadFilesStatus() {
+			return downloadFiles.getStatus();
+		}
 
 }
