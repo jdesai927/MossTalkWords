@@ -86,6 +86,9 @@ public class MainActivity extends Activity {
 	public AlertDialog ad;
 	public int _numCorrect = 0;
 	
+	private AsyncTask<String, Integer, Boolean> downloadHints;
+	private AsyncTask<String, Integer, Boolean> downloadFiles;
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +110,9 @@ public class MainActivity extends Activity {
     	st.setText(Integer.toString(_totalScore));
     	
     	//download images, download hints
-    	AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
-        AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
+    	downloadHints = new LoadHintsTask().execute("");
+        downloadFiles = new LoadFilesTask().execute("");
+        
         //create TextToSpeech
         if(soundGenerator == null){
         soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
@@ -647,5 +651,14 @@ public class MainActivity extends Activity {
 			}
 
 			}    
+		
+		
+		public AsyncTask.Status getDownloadHintsStatus() {
+			return downloadHints.getStatus();
+		}
+		
+		public AsyncTask.Status getDownloadFilesStatus() {
+			return downloadFiles.getStatus();
+		}
 
 }
