@@ -4,12 +4,12 @@
     <string name="app_name">MossTalkWords</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="welcome">Welcome!</string>
+    <string name="welcome">Welcome to Moss Talk Words!</string>
     <string name="diff">Choose a difficulty</string>
     <string name="cat">Choose a category</string>
     <string-array name="stimulus_array">
-        <item>Living Things</item>
         <item>Non Living Things</item>
+        <item>Living Things</item>
     </string-array>
     <string-array name="difficulty_array">
         <item>Easy</item>

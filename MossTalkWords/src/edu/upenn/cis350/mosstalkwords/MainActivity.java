@@ -41,6 +41,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.util.TypedValue;
@@ -64,7 +65,7 @@ public class MainActivity extends Activity {
 	private Button _micButton;
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
-
+	private Bitmap currBitmap = null;
 
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
@@ -83,232 +84,36 @@ public class MainActivity extends Activity {
 	private ArrayList<String> _currentSet;
 
 	public AlertDialog ad;
-
 	public int _numCorrect = 0;
-
-	private String buildUrl(String extension) {
-		_currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
-		return "https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				"/" + _currentSet.get(_currentIndex) + extension;
-
-	}
-	private String buildCachePath(String extension){
-		if(getApplicationContext() != null){
-			if(getApplicationContext().getCacheDir() != null){
-				if(getApplicationContext().getCacheDir().getPath() != null){
-					if(_currentSet == null){
-						return "curr set null!";
-					}
-						else
-						{
-							return getApplicationContext().getCacheDir().getPath()+"/"+_currentSet.get(_currentIndex)+extension; 
-						}
-
-				}
-				else{
-					return "path";
-				}
-			}
-			else{
-				return "get Cache Dir";
-			}
-		}
-		else{
-			return "App context";
-		}
-	}
 	
-	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
-		@Override
-		protected Boolean doInBackground(String... set) {
-			boolean b = false;
-			String [] extensions = {".jpg"};//, "_phrase.wav", "_rhyme.wav", ".wav"};
-			try {
-			 for(int j = 0; j< extensions.length; j++){
-				String extension = extensions[j];
-				if(_currentSet != null){
-				for (String word: _currentSet){
-					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				"/" +word + extension);
-					File file = new File(getApplicationContext().getCacheDir(),word+extension);
-					URLConnection ucon = ur.openConnection();
-					InputStream is = ucon.getInputStream();
-					BufferedInputStream bis = new BufferedInputStream(is);
-					ByteArrayBuffer baf = new ByteArrayBuffer(50);
-					int current = 0;
-					while ((current = bis.read()) != -1)
-						baf.append((byte) current);
-					FileOutputStream fos = new FileOutputStream(file);
-					fos.write(baf.toByteArray());
-					fos.close();
-					b = true;
-				}
-				}
-			} 
-			}catch (MalformedURLException e1) {
-				e1.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		 return b;
-		}
-
-	}
-
-	private class LoadHintsTask extends AsyncTask<String, Integer, Boolean>{
-
-		@Override
-		protected Boolean doInBackground(String... set) {
-			hints = new TreeMap<String, String[]>();
-			boolean b = false;
-			try {
-					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				"/" + "hints.txt");
-					//File file = new File(getApplicationContext().getCacheDir(),_currentSet[i]+extension);
-					BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
-					String lineRead;
-					int linenumber = 0;
-					String word = null;
-					String sentence = null;
-					String Rhyme1 = null;
-					String Rhyme2 = null;
-					while ((lineRead = hintReader.readLine()) != null){
-						switch(linenumber) {
-						case 0: word = lineRead; break;
-						case 1: sentence = lineRead; break;
-						case 2: Rhyme1 = lineRead; break;
-						case 3: Rhyme2 = lineRead;  break;
-						}
-						linenumber++;
-						if(lineRead.length()==0){ 
-							linenumber = 0;
-						}
-						if(linenumber == 4){
-							if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
-								String [] hts = {sentence, Rhyme1, Rhyme2};
-								hints.put(word, hts);
-							}
-						}	
-
-					} 
-			}catch (MalformedURLException e1) {
-				e1.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		 return b;
-		}
-
-	}
-	
-	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		 options.inSampleSize = 2;
-		 options.outHeight = (_imgView.getHeight())/2;
-		 options.outWidth= _imgView.getWidth();
-		Bitmap myBitmap= null;
-		 try{
-			 myBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
-		 }
-		 catch(Exception e){
-			 e.printStackTrace();
-		 }
-			
-		 if (myBitmap != null){
-		_imgView.setScaleType(ScaleType.FIT_XY);
-		 _imgView.setImageBitmap(myBitmap);
-		 }
-	}
-
-
-
-	private void playSound(String hint) {
-		try {
-			if (_mediaPlayer.isPlaying()) {
-				_mediaPlayer.stop();
-			}
-			
-			_mediaPlayer.reset();
-			//_mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-					"/" + _currentSet.get(_currentIndex) + hint + ".wav");
-			//_mediaPlayer.setDataSource("https://s3.amazonaws.com/mosstalkdata/nonlivingthingseasy/banana.wav");
-			_mediaPlayer.prepare();
-			_mediaPlayer.start();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void playSoundText(String hint){
-		if (_listenerIsReady == false){
-			Toast.makeText(this, "Hold on! I'm not ready yet! Try again in a second!", Toast.LENGTH_LONG).show();
-		}
-		else {
-			String text = "";
-			Log.i("info", _currentSet.get(_currentIndex));
-			Log.i("info", Arrays.toString(hints.get(_currentSet.get(_currentIndex))));
-			String[] hintarray = hints.get(_currentSet.get(_currentIndex));
-			if (hintarray != null && hintarray.length > 1){
-				if (hint.equals("word")){
-					text = _currentSet.get(_currentIndex);
-				}
-				if (hint.equals("phrase")){
-					text = hintarray[0];
-				}
-				if (hint.equals("rhyme")){
-					text = hintarray[_rhymeUsed+1];
-					if(_rhymeUsed == (hintarray.length-1)){
-						_rhymeUsed = 0;
-					}
-					else{
-						_rhymeUsed++;
-					}
-				}
-			}
-			Toast.makeText(this, text, Toast.LENGTH_LONG);
-			soundGenerator.speak(text, TextToSpeech.QUEUE_ADD, null);
-		}
-	}
-
-	private class TextToSpeechListener implements TextToSpeech.OnInitListener{
-
-		@Override
-		public void onInit(int arg0) {
-			_listenerIsReady = true;
-
-		}
-	}
-	
-    @Override
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         _imgView = (ImageView) findViewById(R.id.image);
+        //for finding image files
         _currentIndex = 0;
         _currentPath = getIntent().getStringExtra("edu.upenn.cis350.mosstalkwords.currentSetPath");
         _currentSet = getIntent().getStringArrayListExtra("edu.upenn.cis350.mosstalkwords.currentSet");
         
+        //scores
         _scores = new Scores(this.getApplicationContext());
-        
         _totalScore = _scores.getTotalScore();
-        
         _setScore = 0;
         _streak = 0;
         
+        //set score view
         TextView st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_totalScore));
     	
+    	//download images, download hints
+    	AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
         AsyncTask<String, Integer, Boolean> downloadFiles = new LoadFilesTask().execute("");
-        AsyncTask<String, Integer, Boolean> downloadHints = new LoadHintsTask().execute("");
+        //create TextToSpeech
+        if(soundGenerator == null){
         soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
+        
+        }
     	try {
 			loadImage();
 		} catch (InterruptedException e) {
@@ -324,12 +129,14 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
        
+    	//Buttons
         _hintPhraseButton = (Button) findViewById(R.id.hintbuttona);
         _hintRhymeButton = (Button) findViewById(R.id.hintbuttonb);
         _hintPronounceButton = (Button) findViewById(R.id.hintbuttonc);
         _micButton = (Button) findViewById(R.id.micbutton);
         _skipButton = (Button) findViewById(R.id.skipbutton);
         
+      
         _mediaPlayer = new MediaPlayer();
         _mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         
@@ -374,8 +181,6 @@ public class MainActivity extends Activity {
 			}
 		});
         
-       
-        
         _skipButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if(_scores.getHighestStreak() < _streak) {
@@ -389,8 +194,183 @@ public class MainActivity extends Activity {
 		});
         
     }
-    
-    
+	
+	private String buildCachePath(String extension){
+		if(getApplicationContext() != null){
+			if(getApplicationContext().getCacheDir() != null){
+				if(getApplicationContext().getCacheDir().getPath() != null){
+					if(_currentSet == null){
+						return "curr set null!";
+					}
+					else {
+						return getApplicationContext().getCacheDir().getPath()+"/"+_currentSet.get(_currentIndex)+extension; 
+					}
+				}
+			}	
+		}
+		return "error encountered";
+	}
+	
+	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
+		@Override
+		protected Boolean doInBackground(String... set) {
+			boolean b = false;
+			try {
+				String extension = ".jpg";
+				if(_currentSet != null){
+					for (String word: _currentSet){
+						URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+								"/" +word + extension);
+						File file = new File(getApplicationContext().getCacheDir(),word+extension);
+						Log.i("info", file.getAbsolutePath());
+						if (file.exists() == false){
+							
+						BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
+						ByteArrayBuffer baf = new ByteArrayBuffer(50);
+						int current = 0;
+						while ((current = bis.read()) != -1){
+							baf.append((byte) current);
+						}
+							FileOutputStream fos = new FileOutputStream(file);
+							fos.write(baf.toByteArray());
+							fos.close();
+							b = true;
+						}
+						else{
+							Log.i("info", file.getAbsolutePath() + "  exists!");
+						}
+				}
+			} 
+			}
+			catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		 return b;
+		}
+	}
+
+	private class LoadHintsTask extends AsyncTask<String, Integer, Boolean>{
+
+		@Override
+		protected Boolean doInBackground(String... set) {
+			hints = new TreeMap<String, String[]>();
+			boolean b = false;
+			try {
+				URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+				"/" + "hints.txt");
+				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
+				String lineRead;
+				int linenumber = 0;
+				String word = null;
+				String sentence = null;
+				String Rhyme1 = null;
+				String Rhyme2 = null;
+				while ((lineRead = hintReader.readLine()) != null){
+					b = true;
+					switch(linenumber) {
+					case 0: word = lineRead; break;
+					case 1: sentence = lineRead; break;
+					case 2: Rhyme1 = lineRead; break;
+					case 3: Rhyme2 = lineRead;  break;
+					}
+					linenumber++;
+					if(lineRead.length()==0){ 
+						linenumber = 0;
+					}
+					if(linenumber == 4){
+						if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
+							String [] hts = {sentence, Rhyme1, Rhyme2};
+							hints.put(word, hts);
+						}
+					}	
+
+				} 
+			}catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		 return b;
+		}
+	}
+	
+	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
+		currBitmap = null;
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inSampleSize = 2;
+		options.outHeight = (_imgView.getHeight())/2;
+		options.outWidth= _imgView.getWidth();
+		Log.i("info", buildCachePath(".jpg"));
+		if(!(new File(buildCachePath(".jpg"))).exists()){
+			Log.i("info","in not exists");
+			//AsyncTask<String, Integer, Drawable> at = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+				//	"/" +_currentSet.get(_currentIndex)+ ".jpg");
+			//Drawable draw = at.get();
+			//if (draw != null){
+			//_imgView.setImageDrawable(draw);
+		//}
+		}
+		try{
+			 currBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
+		}
+		catch(Exception e){
+			
+		}	
+		if (currBitmap == null){
+			AsyncTask<String, Integer, Drawable> atd = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+					"/" +_currentSet.get(_currentIndex)+ ".jpg");
+			Drawable drawd = atd.get();
+			if (drawd != null){
+			_imgView.setImageDrawable(drawd);
+			}
+		}
+		if (currBitmap != null){
+			_imgView.setScaleType(ScaleType.CENTER_INSIDE);
+			_imgView.setImageBitmap(currBitmap);
+		}
+		
+	}
+	
+
+	private void playSoundText(String hint){
+		if (_listenerIsReady == false){
+			Toast.makeText(this, "Hold on! I'm not ready yet! Try again in a second!", Toast.LENGTH_SHORT).show();
+		}
+		else {
+			String text = "";
+			Log.i("info", _currentSet.get(_currentIndex));
+			Log.i("info", Arrays.toString(hints.get(_currentSet.get(_currentIndex))));
+			String[] hintarray = hints.get(_currentSet.get(_currentIndex));
+			if (hintarray != null && hintarray.length > 1){
+				if (hint.equals("word")){
+					text = _currentSet.get(_currentIndex);
+				}
+				if (hint.equals("phrase")){
+					text = hintarray[0];
+				}
+				if (hint.equals("rhyme")){
+					text = hintarray[_rhymeUsed+1];
+					if(_rhymeUsed == (hintarray.length-1)){
+						_rhymeUsed = 0;
+					}
+					else{
+						_rhymeUsed++;
+					}
+				}
+			}
+			soundGenerator.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+		}
+	}
+
+	private class TextToSpeechListener implements TextToSpeech.OnInitListener{
+		@Override
+		public void onInit(int arg0) {
+			_listenerIsReady = true;
+		}
+	}
+	
     public void nextImage(){
     	_currentIndex++;
 		_rhymeUsed = 0;
@@ -420,6 +400,9 @@ public class MainActivity extends Activity {
     
     private boolean checkEndOfSet(){
     	boolean end = false;
+    	if(_currentSet == null){
+    		return true;
+    	}
     	if(_currentIndex >= _currentSet.size()){
     		end = true;
 
@@ -441,7 +424,7 @@ public class MainActivity extends Activity {
     		}
 
     		_scores.setTotalScore(_totalScore);
-
+    		
     		Intent i = new Intent(this, EndSet.class);
     		i.putExtra("set", _currentPath);
     		i.putExtra("setscore", _setScore);
@@ -454,6 +437,7 @@ public class MainActivity extends Activity {
     
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
         case 1:  //speech recognition result
@@ -500,9 +484,7 @@ public class MainActivity extends Activity {
 
 
 		if(isSuccess) {  //only give them continue button if they got it right
-			
 			_numCorrect++;
-			
 			b.setTitle("Correct!");
 			b.setIcon(R.drawable.checkmark);
 			b.setMessage("You said: " + word_said);
@@ -513,7 +495,6 @@ public class MainActivity extends Activity {
 					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
 					_totalScore += 3-_numHintsUsed;
-
 					_streak++;
 		        	TextView st = (TextView) findViewById(R.id.score);
 
@@ -606,40 +587,65 @@ public class MainActivity extends Activity {
 
 	   @Override
 	   protected void onDestroy() {
+		   Log.i("info", "onDestroy called");
 		  _currentIndex = 0;
 		  if(soundGenerator != null){
 			  _listenerIsReady = false;
 			  soundGenerator.stop();
-			  soundGenerator.shutdown();
+			  soundGenerator.shutdown(); 
 			  soundGenerator = null;
 		  }
 
 		  _scores.closeDb();
 	      super.onDestroy();
-	      
-	      try {
-	         trimCache(this);
-	      } catch (Exception e) {
-	         // TODO Auto-generated catch block
-	         e.printStackTrace();
-	      }
+	     
 	   }
 
 	   @Override
 	    protected void onPause() {
 	        super.onPause();
-	        if(soundGenerator != null){
-	        soundGenerator.stop();
-	        soundGenerator.shutdown();
-	        _listenerIsReady = false;
-	        soundGenerator = null;
-	        }
+	       
+	    }
+	   
+	   @Override
+	    protected void onStop() {
+	        super.onStop();
+	      
 	    }
 
 	    @Override
 	    protected void onResume() {
 	        super.onResume();
-	       // soundGenerator = new TextToSpeech(this, new TextToSpeechListener());
 	    }
+	    
+		private class LoadMissingImageTask extends AsyncTask<String, Integer, Drawable>{
+
+			@Override
+			protected Drawable doInBackground(String... url) {
+			Drawable draw = null;
+			DefaultHttpClient httpClient = new DefaultHttpClient();
+			HttpGet request = new HttpGet(url[0]);
+			HttpResponse response;
+			try {
+			response = httpClient.execute(request);
+			InputStream is;
+			is = response.getEntity().getContent();
+			TypedValue typedValue = new TypedValue();
+			typedValue.density = TypedValue.DENSITY_NONE;
+			draw = Drawable.createFromResourceStream(null, typedValue, is, "src");
+			// _imgView.setImageDrawable(drawable);
+
+			} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			}
+
+			return draw;
+			}
+
+			}    
 
 }
