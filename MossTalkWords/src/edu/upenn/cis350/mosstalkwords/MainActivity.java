@@ -352,7 +352,7 @@ public class MainActivity extends Activity {
 				}
 				if (hint.equals("rhyme")){
 					text = hintarray[_rhymeUsed+1];
-					if(_rhymeUsed == (hintarray.length-1)){
+					if(_rhymeUsed == (hintarray.length-2)){
 						_rhymeUsed = 0;
 					}
 					else{

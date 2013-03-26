@@ -67,10 +67,10 @@ public class PickSet extends Activity {
 	}
 	
 	 @Override
-	    protected void onResume() {
-	        super.onResume();
-	        AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
-	    }
+	    protected void onRestart() {
+	        super.onRestart();
+	        updateListViewInfo();
+	 }
 	 
 	 public void setListViewInfo(){
 		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
@@ -97,6 +97,30 @@ public class PickSet extends Activity {
 	        lv.setOnItemClickListener(new SetSelectedListener());
 		 }
 		 
+	 public void updateListViewInfo(){
+		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
+		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
+		 ArrayList<Set> sets = new ArrayList<Set>();
+		 for (String cat : cats){
+			 for (String diff : diffs){
+				 String category = cat+diff;
+				 category = category.replaceAll("\\s","");
+				 category = category.toLowerCase();
+				 String score = getPercentageOfCategoryCompleted(category);
+				 sets.add(new Set(score, cat, diff));
+			 }
+		 }
+		
+		 
+		 SetAdapter adapter = new SetAdapter(this,R.layout.listview_item, sets);
+		 
+		 lv = (ListView)findViewById(R.id.listView1);
+	        
+	        lv.setAdapter(adapter);
+	        lv.setOnItemClickListener(new SetSelectedListener());
+	        lv.invalidate();
+		 }
+	 
 	 
 	    
 	
