@@ -335,18 +335,15 @@ public class MainActivity extends Activity {
 		}
 		catch(Exception e){
 		}	
-		if (currBitmap == null){
-			AsyncTask<String, Integer, Drawable> atd = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-					"/" +_currentSet.get(_currentIndex)+ ".jpg");
-			Drawable drawd = atd.get();
-			if (drawd != null){
-				Bitmap bitmap = drawableToBitmap(drawd);
-				imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap);
-			}
-		}
 		if (currBitmap != null){
+			if(_currentIndex == 0){
+			_imgView.setImageBitmap(currBitmap);
+			}
+			else{
+				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
+			}
 			//_imgView.setScaleType(ScaleType.CENTER_INSIDE);
-			imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
+			//imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
 		}
 		
 	}
