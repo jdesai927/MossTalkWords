@@ -12,35 +12,38 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.TreeMap;
 
 import org.apache.http.util.ByteArrayBuffer;
+
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class PickSet extends Activity {
 	public final static String currentSetPath = "edu.upenn.cis350.mosstalkwords.currentSetPath";
 	public final static String currentSet = "edu.upenn.cis350.mosstalkwords.currentSet";
 	private ArrayList<String> categories;
-	private Spinner stimspinner;
-	private Spinner diffspinner;
+	private ListView lv;
 	private String difficulty;
 	private String category;
 	private Scores scores;
 	private TextView highscore;
+	
+	private AsyncTask<String, Integer, Boolean> downloadCatsWords;
 	private TreeMap<String, ArrayList<String>> catToWords;
 	private TreeMap<String, Integer> catToSizeOfCat = new TreeMap<String, Integer>();
 	private TreeMap<String, Integer> catToNumWordCompleted = new TreeMap<String, Integer>();
@@ -50,20 +53,10 @@ public class PickSet extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_pick);
-
-		stimspinner = (Spinner) findViewById(R.id.set_spinner);
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-				R.array.stimulus_array, android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		stimspinner.setAdapter(adapter);
-
-		diffspinner = (Spinner) findViewById(R.id.difficulty_spinner);
-		ArrayAdapter<CharSequence> diffadapter = ArrayAdapter.createFromResource(this,
-				R.array.difficulty_array, android.R.layout.simple_spinner_item);
-		diffadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		diffspinner.setAdapter(diffadapter);
-		stimspinner.setOnItemSelectedListener(new CategorySelectedListener());
-		diffspinner.setOnItemSelectedListener(new DifficultySelectedListener());
+		
+		
+		
+		
 		
 		scores = new Scores(getApplicationContext());
 	
@@ -72,8 +65,66 @@ public class PickSet extends Activity {
 		category = "livingthings";
 		difficulty = "easy";
 		
-		AsyncTask<String, Integer, Boolean> downloadCatsWords = new LoadCategoriesWords().execute("");
+		downloadCatsWords = new LoadCategoriesWords().execute("");
 	}
+	
+	 @Override
+	    protected void onRestart() {
+	        super.onRestart();
+	        updateListViewInfo();
+	 }
+	 
+	 public void setListViewInfo(){
+		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
+		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
+		 ArrayList<Set> sets = new ArrayList<Set>();
+		 for (String cat : cats){
+			 for (String diff : diffs){
+				 String category = cat+diff;
+				 category = category.replaceAll("\\s","");
+				 category = category.toLowerCase();
+				 String score = getPercentageOfCategoryCompleted(category);
+				 sets.add(new Set(score, cat, diff));
+			 }
+		 }
+		
+		 
+		 SetAdapter adapter = new SetAdapter(this,R.layout.listview_item, sets);
+		 
+		 lv = (ListView)findViewById(R.id.listView1);
+	        
+	        View header = (View)getLayoutInflater().inflate(R.layout.listview_header, null);
+	        lv.addHeaderView(header);
+	        lv.setAdapter(adapter);
+	        lv.setOnItemClickListener(new SetSelectedListener());
+		 }
+		 
+	 public void updateListViewInfo(){
+		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
+		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
+		 ArrayList<Set> sets = new ArrayList<Set>();
+		 for (String cat : cats){
+			 for (String diff : diffs){
+				 String category = cat+diff;
+				 category = category.replaceAll("\\s","");
+				 category = category.toLowerCase();
+				 String score = getPercentageOfCategoryCompleted(category);
+				 sets.add(new Set(score, cat, diff));
+			 }
+		 }
+		
+		 
+		 SetAdapter adapter = new SetAdapter(this,R.layout.listview_item, sets);
+		 
+		 lv = (ListView)findViewById(R.id.listView1);
+	        
+	        lv.setAdapter(adapter);
+	        lv.setOnItemClickListener(new SetSelectedListener());
+	        lv.invalidate();
+		 }
+	 
+	 
+	    
 	
 	//Method that returns the percentage of the category that's been completed (eg. 8/10, 0/10 etc.)
 	//Fiona should use this method to display either this string or a star if the percentage is 10/10 or 9/9
@@ -85,8 +136,7 @@ public class PickSet extends Activity {
 		return catToNumWordCompleted.get(category) + "/" + catToSizeOfCat.get(category);
 	}
 
-	public void onStartButtonClick(View view){
-
+	public void start(View view){
 		Intent i = new Intent(this, MainActivity.class);
 		i.putExtra(currentSetPath, category+difficulty);
 		i.putStringArrayListExtra(currentSet, getSet(category+difficulty));
@@ -99,36 +149,23 @@ public class PickSet extends Activity {
 		return catToWords.get(key);
 	}
 	
-	public class DifficultySelectedListener implements OnItemSelectedListener {
+	public class SetSelectedListener implements OnItemClickListener {
 
 		@SuppressLint("DefaultLocale")
-		public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-			difficulty = parent.getItemAtPosition(pos).toString();	
-			difficulty = difficulty.replaceAll("\\s","");
-			difficulty = difficulty.toLowerCase();
-		}
-
-		@Override
-		public void onNothingSelected(AdapterView<?> arg0) {}
-
-	}
-	
-	public class CategorySelectedListener implements OnItemSelectedListener {
-
-		@SuppressLint("DefaultLocale")
-		public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
-			category = parent.getItemAtPosition(pos).toString();	
+		public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
+			
+			Set chosen = (Set)parent.getItemAtPosition(pos);
+			category = chosen.category;
 			category = category.replaceAll("\\s","");
 			category = category.toLowerCase();
+			difficulty = chosen.difficulty;
+			difficulty = difficulty.toLowerCase();
+			start(view);
+			Log.i("info", "Got click: " + category + difficulty);
 		}
-		
-		protected void onPostExecute(Boolean result) {
-			AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
-		}
-		@Override
-		public void onNothingSelected(AdapterView<?> arg0) {}
-
 	}
+	
+	
 
 	private class LoadCategoriesWords extends AsyncTask<String, Integer, Boolean>{
 		@Override
@@ -176,25 +213,33 @@ public class PickSet extends Activity {
 
 		 return b;
 		}
+		
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			setListViewInfo();
 			AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
 		}
 
 	}
+	
+	
 
 	private class LoadOneFile extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {
 			boolean b = false;
+			Log.i("info", "LoadOneFile called");
 			try {
 				for (String cat: categories ){
+					
 					if(getSet(cat) != null){
 					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + cat + 
 							"/" + getSet(cat).get(0) + ".jpg");
-
+					Log.i("info", ur.toString());
 					File file = new File(getApplicationContext().getCacheDir(),  getSet(cat).get(0) +".jpg");
+					Log.i("info", file.getAbsolutePath());	
+					if (file.exists() == false){
 					URLConnection ucon = ur.openConnection();
 					InputStream is = ucon.getInputStream();
 					BufferedInputStream bis = new BufferedInputStream(is);
@@ -202,12 +247,19 @@ public class PickSet extends Activity {
 					int current = 0;
 					while ((current = bis.read()) != -1)
 						baf.append((byte) current);
+					
 					FileOutputStream fos = new FileOutputStream(file);
 					fos.write(baf.toByteArray());
 					fos.close();
 					b = true;
 				}
-				}
+					
+					else{
+						Log.i("info", file.getAbsolutePath() + "  exists!");
+					}
+					}
+					}
+				
 
 			}catch (MalformedURLException e1) {
 				e1.printStackTrace();
@@ -219,4 +271,12 @@ public class PickSet extends Activity {
 		}
 
 	}
+	
+	
+	public AsyncTask.Status getDownloadCatsStatus() {
+		return downloadCatsWords.getStatus();
+	}
+	
+	
+	
 }

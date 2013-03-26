@@ -2,9 +2,9 @@ package edu.upenn.cis350.mosstalkwords.test;
 
 import java.util.ArrayList;
 
-import android.content.DialogInterface;
+import android.app.Activity;
 import android.content.Intent;
-import android.speech.RecognizerIntent;
+import android.os.AsyncTask;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.Button;
 import edu.upenn.cis350.mosstalkwords.MainActivity;
@@ -28,14 +28,25 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 		//  (this substitutes for what PickSet would normally pass to MainActivity)
 		Intent i = new Intent();
 		i.putExtra(PickSet.currentSetPath, "nonlivingthingshard");
-		i.putExtra(PickSet.currentSet, 
-				getInstrumentation().getTargetContext().getApplicationContext().getResources().getStringArray(
-						edu.upenn.cis350.mosstalkwords.R.array.nonlivingthingshard));
+		
+		ArrayList<String> curr_set = new ArrayList<String>();
+		curr_set.add("parachute");
+		curr_set.add("freezer");
+		curr_set.add("marker");
+		curr_set.add("icicle");
+		curr_set.add("boomerang");
+		curr_set.add("calculator");
+		curr_set.add("stadium");
+		curr_set.add("motorcycle");
+		curr_set.add("toothbrush");
+		curr_set.add("spatula");
+		i.putStringArrayListExtra(PickSet.currentSet,curr_set);
 		
 		setActivityIntent(i);  //later MainActivity calls to getIntent will return this (we need this to 
 								// initialize set directories, etc
 
 		act = (MainActivity) this.getActivity();
+		
 		
 		hintPhraseButton = (Button) act.findViewById(R.id.hintbuttona);
         hintRhymeButton = (Button) act.findViewById(R.id.hintbuttonb);
@@ -43,14 +54,19 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         skipButton = (Button) act.findViewById(R.id.skipbutton);
 	}
 	
-	//HINT TESTS DONT WORK IN EMULATOR BECAUSE MEDIA PLAYER CRASHES
+	//HINT TESTS DONT WORK IN EMULATOR BECAUSE TEXT TO SPEECH DOESNT WORK
 	/**
 	 * Test if clicking the Phrase hint button increments the 
 	 * numHintsUsed.
 	 */
-	public void testHintPhrase() {
+	public void testHintPhrase() throws InterruptedException {
 		assertEquals("hints used at startup", 0, act._numHintsUsed);
 
+		while(act.getDownloadHintsStatus() != AsyncTask.Status.FINISHED &&
+				act.getDownloadFilesStatus() != AsyncTask.Status.FINISHED) {
+			Thread.sleep(500);
+		}
+		
 		act.runOnUiThread(new Runnable() {
 			public void run() {
 				hintPhraseButton.performClick();
@@ -65,9 +81,15 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 	/**
 	 * Test if clicking the Rhyme hint button increments the 
 	 * numHintsUsed.
+	 * @throws InterruptedException 
 	 */
-	public void testHintRhyme() {
+	public void testHintRhyme() throws InterruptedException {
 		assertEquals("hints used at startup", 0, act._numHintsUsed);
+		
+		while(act.getDownloadHintsStatus() != AsyncTask.Status.FINISHED &&
+				act.getDownloadFilesStatus() != AsyncTask.Status.FINISHED) {
+			Thread.sleep(500);
+		}
 		
 		act.runOnUiThread(new Runnable() {
 			public void run() {
@@ -83,9 +105,15 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 	/**
 	 * Test if clicking the Pronounce hint button increments the 
 	 * numHintsUsed.
+	 * @throws InterruptedException 
 	 */
-	public void testHintPronounce() {
+	public void testHintPronounce() throws InterruptedException {
 		assertEquals("hints used at startup", 0, act._numHintsUsed);
+		
+		while(act.getDownloadHintsStatus() != AsyncTask.Status.FINISHED &&
+				act.getDownloadFilesStatus() != AsyncTask.Status.FINISHED) {
+			Thread.sleep(500);
+		}
 		
 		act.runOnUiThread(new Runnable() {
 			public void run() {
@@ -99,10 +127,16 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 	}
 	
 	/**
-	 * Test if clicking the skip button resets the numHintsUsed.
+	 * Test if clicking the skip button resets variables.
+	 * @throws InterruptedException 
 	 */
-	public void testHintReset() {
+	public void testSkip() throws InterruptedException {
 		act._numHintsUsed = 3;
+		
+		while(act.getDownloadHintsStatus() != AsyncTask.Status.FINISHED &&
+				act.getDownloadFilesStatus() != AsyncTask.Status.FINISHED) {
+			Thread.sleep(500);
+		}
 		
 		act.runOnUiThread(new Runnable() {
 			public void run() {
@@ -113,37 +147,22 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 		getInstrumentation().waitForIdleSync();  // wait for the UI to finish
 			
 		assertEquals("hints used after skipping", 0, act._numHintsUsed);
+		assertEquals("tries after skipping", 0, act._numTries);
+		assertEquals("rhyme num after skipping", 0, act._rhymeUsed);
 	}
+
+
 	
-	//VOICE TEST DOESNT WORK RIGHT NOW BECAUSE I CANT SEEM TO GET THE ALERT DIALOG STARTING
-	//  AND CLICKING TO WORK WHEN TESTING, SO SCORE ISNT UPDATED
-//	/**
-//	 * Test what happens after a correct voice recognition result by simulating the
-//	 * voice recognition's resulting intent and passing it to MainActivity.onActivityResult()
-//	 */
-//	public void testVoiceCorrect() {
-//		Intent i = new Intent();
-//		ArrayList<String> voice_results = new ArrayList<String>();
-//		voice_results.add("freezer");
-//		
-//		i.putStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS, voice_results);
-//		
-//		act.onActivityResult(1, act.RESULT_OK, i);
-//		
-//		getInstrumentation().waitForIdleSync();  //wait for the AlertDialog to pop up
-//		
-//		act.runOnUiThread(new Runnable() {
-//			public void run() {
-//				act.ad.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
-//			}
-//		});
-//		
-//		getInstrumentation().waitForIdleSync();  //wait for the app to process a "continue" click
-//		
-//		assertEquals("score updated for correct voice result",3,act._score);
-//	}
-	
-	
-	
+	/**
+	 * Test whether a successful return from EndSet will cause this 
+	 * activity to finish correctly
+	 */
+	public void testFinish() {
+		
+		//send a fake notice that EndSet has ended
+		act.onActivityResult(2, Activity.RESULT_OK, null);
+		
+		assertTrue(act.isFinishing());
+	}
 	
 }
