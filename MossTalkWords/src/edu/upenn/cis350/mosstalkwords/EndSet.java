@@ -8,9 +8,9 @@ import android.widget.TextView;
 
 public class EndSet extends Activity {
 
-	private String set;
-	private int setscore;
-	private boolean newStreak;
+	public String set;
+	public int setscore;
+	public boolean newStreak;
 	
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
