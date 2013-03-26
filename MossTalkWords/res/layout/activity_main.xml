@@ -74,8 +74,10 @@ tools:context=".MainActivity" >
 		android:id="@+id/image"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:adjustViewBounds="true"
 		android:cropToPadding="true"
+		android:maxHeight="700dp"
+		android:adjustViewBounds="true"
+		android:scaleType="fitXY"
 		android:layout_centerHorizontal="true"
 		android:layout_centerVertical="true"/>
 

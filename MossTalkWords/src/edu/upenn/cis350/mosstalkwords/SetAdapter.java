@@ -25,7 +25,6 @@ import android.widget.TextView;
 			this.data = data;
 		}
 		
-		
 		@Override
 	    public View getView(int position, View convertView, ViewGroup parent) {
 	        View row = convertView;

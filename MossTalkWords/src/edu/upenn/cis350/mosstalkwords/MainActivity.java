@@ -299,24 +299,25 @@ public class MainActivity extends Activity {
 	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
 		currBitmap = null;
 		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inSampleSize = 2;
-		options.outHeight = (_imgView.getHeight())/2;
-		options.outWidth= _imgView.getWidth();
 		Log.i("info", buildCachePath(".jpg"));
 		if(!(new File(buildCachePath(".jpg"))).exists()){
 			Log.i("info","in not exists");
-			//AsyncTask<String, Integer, Drawable> at = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				//	"/" +_currentSet.get(_currentIndex)+ ".jpg");
-			//Drawable draw = at.get();
-			//if (draw != null){
-			//_imgView.setImageDrawable(draw);
-		//}
+	
 		}
 		try{
+			 options.inJustDecodeBounds = true;
+			 Bitmap first = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
+			 int width = options.outWidth;
+			 int height = options.outHeight;
+			 int divider = 1;
+			 if (width > 2000 || height > 2000){
+				 divider = Double.valueOf(Math.max(Math.ceil(width/2000.0),Math.ceil(height/2000.0))).intValue();
+			 }
+			 options.inJustDecodeBounds = false;
+			 options.inSampleSize = divider;
 			 currBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
 		}
 		catch(Exception e){
-			
 		}	
 		if (currBitmap == null){
 			AsyncTask<String, Integer, Drawable> atd = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
@@ -327,13 +328,12 @@ public class MainActivity extends Activity {
 			}
 		}
 		if (currBitmap != null){
-			_imgView.setScaleType(ScaleType.CENTER_INSIDE);
+			//_imgView.setScaleType(ScaleType.CENTER_INSIDE);
 			_imgView.setImageBitmap(currBitmap);
 		}
 		
 	}
 	
-
 	private void playSoundText(String hint){
 		if (_listenerIsReady == false){
 			Toast.makeText(this, "Hold on! I'm not ready yet! Try again in a second!", Toast.LENGTH_SHORT).show();
@@ -460,7 +460,7 @@ public class MainActivity extends Activity {
         
         case 2: //endset result
         	if(resultCode == RESULT_OK) {
-        		
+     
         		//construct intent with number of correct answers to pass back to pickset
         		
         		finish();
