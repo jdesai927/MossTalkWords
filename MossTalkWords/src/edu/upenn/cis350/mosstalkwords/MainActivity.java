@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
 	private TreeMap<String, String[]> hints; 
-	private int _rhymeUsed; 
+	public int _rhymeUsed; 
 	public int _totalScore = 0;
 
 
@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
 	public int _streak = 0;
 	public boolean newStreak = false;
 	public int _numHintsUsed = 0;
-	private int _numTries = 0;
+	public int _numTries = 0;
 	private String _feedbackResult = "";
 	private ArrayList<String> _currentSet;
 

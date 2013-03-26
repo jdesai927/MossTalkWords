@@ -42,6 +42,8 @@ public class PickSet extends Activity {
 	private String category;
 	private Scores scores;
 	private TextView highscore;
+	
+	private AsyncTask<String, Integer, Boolean> downloadCatsWords;
 	private TreeMap<String, ArrayList<String>> catToWords;
 	private TreeMap<String, Integer> catToSizeOfCat = new TreeMap<String, Integer>();
 	private TreeMap<String, Integer> catToNumWordCompleted = new TreeMap<String, Integer>();
@@ -63,7 +65,7 @@ public class PickSet extends Activity {
 		category = "livingthings";
 		difficulty = "easy";
 		
-		AsyncTask<String, Integer, Boolean> downloadCatsWords = new LoadCategoriesWords().execute("");
+		downloadCatsWords = new LoadCategoriesWords().execute("");
 	}
 	
 	 @Override
@@ -269,4 +271,12 @@ public class PickSet extends Activity {
 		}
 
 	}
+	
+	
+	public AsyncTask.Status getDownloadCatsStatus() {
+		return downloadCatsWords.getStatus();
+	}
+	
+	
+	
 }

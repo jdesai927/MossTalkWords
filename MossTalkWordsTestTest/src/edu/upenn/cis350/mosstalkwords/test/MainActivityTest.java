@@ -127,10 +127,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 	}
 	
 	/**
-	 * Test if clicking the skip button resets the numHintsUsed.
+	 * Test if clicking the skip button resets variables.
 	 * @throws InterruptedException 
 	 */
-	public void testHintReset() throws InterruptedException {
+	public void testSkip() throws InterruptedException {
 		act._numHintsUsed = 3;
 		
 		while(act.getDownloadHintsStatus() != AsyncTask.Status.FINISHED &&
@@ -147,9 +147,11 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
 		getInstrumentation().waitForIdleSync();  // wait for the UI to finish
 			
 		assertEquals("hints used after skipping", 0, act._numHintsUsed);
+		assertEquals("tries after skipping", 0, act._numTries);
+		assertEquals("rhyme num after skipping", 0, act._rhymeUsed);
 	}
 
-	//====================================================================================
+
 	
 	/**
 	 * Test whether a successful return from EndSet will cause this 
