@@ -33,7 +33,7 @@ public class EndSet extends Activity {
 		highscoretext.setText("High Score: " + scores.getHighScore(set));
 		if(setscore == scores.getHighScore(set) && setscore > 0) {
 			//highlight the fact that they got a new high score
-			highscoretext.setTextColor(Color.rgb(20, 230, 120));
+			highscoretext.setTextColor(Color.parseColor("#288C8C"));
 		}
 		
 		//the total score
@@ -46,7 +46,7 @@ public class EndSet extends Activity {
 		streaktext.setText("Longest Streak: " + scores.getHighestStreak());
 		if(newStreak && scores.getHighestStreak() > 0) {
 			//highlight the fact that they got a new streak 
-			streaktext.setTextColor(Color.rgb(20, 230, 120));
+			streaktext.setTextColor(Color.parseColor("#288C8C"));
 		}
 		
 	}

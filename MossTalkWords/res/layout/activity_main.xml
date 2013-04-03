@@ -107,9 +107,10 @@ tools:context=".MainActivity" >
 	        android:id="@+id/skipbutton"
 	        android:layout_alignParentRight="true"
 	        android:layout_width="100dp"
-	        android:textSize="25dp" 
-	        android:layout_height="100dp"
-	        android:text="Skip"/>
+	        android:textSize="20dp" 
+	        android:layout_height="match_parent"
+	        android:text="Skip"
+	        android:drawableTop="@drawable/skip" />
 	    
 	</RelativeLayout>
 	
