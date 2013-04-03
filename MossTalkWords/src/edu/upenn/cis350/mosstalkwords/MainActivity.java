@@ -3,21 +3,15 @@ package edu.upenn.cis350.mosstalkwords;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import android.speech.tts.TextToSpeech;
@@ -42,25 +36,19 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -575,6 +563,8 @@ public class MainActivity extends Activity {
 					nextImage();
 				}
 			});
+			
+			soundGenerator.speak("So close! You'll get it next time.", TextToSpeech.QUEUE_FLUSH, null);
 		}
 		else {
 			b.setTitle("Not quite!");
@@ -596,6 +586,8 @@ public class MainActivity extends Activity {
 					_streak = 0;
 				}
 			});
+			
+			soundGenerator.speak("Almost!  Try again", TextToSpeech.QUEUE_FLUSH, null);
 		}
 
 		ad = b.create();
@@ -606,6 +598,13 @@ public class MainActivity extends Activity {
 		if(isSuccess) {
 			MediaPlayer mp = MediaPlayer.create(this, R.raw.correct);
 			mp.start();
+			
+			mp.setOnCompletionListener(new OnCompletionListener() {
+
+				public void onCompletion(MediaPlayer mp) {
+					soundGenerator.speak("Great Job!", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			});
 		}
 
 	}
