@@ -17,6 +17,7 @@ tools:context=".MainActivity" >
 		    android:layout_height="50dp"
 		    android:layout_marginTop="5dp"
 		    android:layout_weight="1"
+		    android:layout_gravity="center_vertical"
 		    android:textSize="30dp" 
 		    android:textColor="#EBC06A"
 		    android:text="Hint:" />
@@ -29,7 +30,8 @@ tools:context=".MainActivity" >
 		    android:layout_marginTop="5dp"
 		    android:layout_weight="3"
 		    android:textSize="25dp" 
-		    android:text="Phrase" />
+		    android:text="Phrase"
+		    android:drawableTop="@drawable/hint_phrase" />
 
 		<Button
 		    android:id="@+id/hintbuttonb"
@@ -39,7 +41,8 @@ tools:context=".MainActivity" >
 		    android:layout_marginTop="5dp"
 		    android:textSize="25dp" 
 		    android:layout_weight="3"
-		    android:text="Rhyme" />
+		    android:text="Rhyme"
+		    android:drawableTop="@drawable/hint_rhyme" />
 		
 		<Button
 		    android:id="@+id/hintbuttonc"
@@ -49,7 +52,8 @@ tools:context=".MainActivity" >
 		    android:layout_marginTop="5dp"
 		    android:textSize="25dp"	
 		    android:layout_weight="3"
-		    android:text="Word" />
+		    android:text="Word"
+		    android:drawableTop="@drawable/hint_word" />
 
 		<TextView 
 			android:id="@+id/scoretext"
@@ -57,7 +61,8 @@ tools:context=".MainActivity" >
 			android:layout_width="wrap_content"
 			android:layout_weight="1"
 			android:layout_marginLeft="5dp"
-			android:textSize="25dp" 
+			android:layout_gravity="center_vertical"
+			android:textSize="30dp" 
 			android:textColor="#EBC06A"
 			android:text="Score:"/>
 		
@@ -66,7 +71,8 @@ tools:context=".MainActivity" >
 			android:layout_height="50dp"
 			android:layout_width="wrap_content"
 			android:layout_marginLeft="5dp"
-			android:textSize="25dp"		
+			android:layout_gravity="center_vertical"
+			android:textSize="30dp"		
 			android:layout_weight="1"	
 			android:textColor="#EBC06A"
 			android:text="0"/>
