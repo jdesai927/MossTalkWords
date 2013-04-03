@@ -528,10 +528,11 @@ public class MainActivity extends Activity {
 			b.setIcon(R.drawable.checkmark);
 			b.setMessage("You said: " + word_said);
 
+			_feedbackResult="continue";
+
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
 					_totalScore += 3-_numHintsUsed;
 					_streak++;
@@ -548,10 +549,11 @@ public class MainActivity extends Activity {
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("The correct answer was: " + _currentSet.get(_currentIndex));
 			
+			_feedbackResult="continue";
+
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="continue";
 
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak) {
@@ -564,17 +566,17 @@ public class MainActivity extends Activity {
 				}
 			});
 			
-			soundGenerator.speak("So close! You'll get it next time.", TextToSpeech.QUEUE_FLUSH, null);
 		}
 		else {
 			b.setTitle("Not quite!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("You said: " + word_said);
+			
+			_feedbackResult="again";
 
 			b.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="again";
 					_numTries++;
 
 					//check if streak that just ended was the highest
@@ -587,7 +589,6 @@ public class MainActivity extends Activity {
 				}
 			});
 			
-			soundGenerator.speak("Almost!  Try again", TextToSpeech.QUEUE_FLUSH, null);
 		}
 
 		ad = b.create();
@@ -605,6 +606,12 @@ public class MainActivity extends Activity {
 					soundGenerator.speak("Great Job!", TextToSpeech.QUEUE_FLUSH, null);
 				}
 			});
+		}
+		else if(_feedbackResult.equals("continue")) {
+			soundGenerator.speak("So close! You'll get it next time.", TextToSpeech.QUEUE_FLUSH, null);
+		}
+		else if(_feedbackResult.equals("again")) {
+			soundGenerator.speak("Almost!  Try again", TextToSpeech.QUEUE_FLUSH, null);
 		}
 
 	}
