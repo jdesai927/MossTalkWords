@@ -11,16 +11,6 @@ tools:context=".MainActivity" >
 		android:layout_height="wrap_content"
 		android:orientation="horizontal">
 
-		<TextView
-		    android:id="@+id/hinttext"
-		    android:layout_width="wrap_content"
-		    android:layout_height="50dp"
-		    android:layout_marginTop="5dp"
-		    android:layout_weight="1"
-		    android:textSize="30dp" 
-		    android:textColor="#EBC06A"
-		    android:text="Hint:" />
-
 		<Button
 		    android:id="@+id/hintbuttona"
 		    android:layout_width="wrap_content"
@@ -29,7 +19,8 @@ tools:context=".MainActivity" >
 		    android:layout_marginTop="5dp"
 		    android:layout_weight="3"
 		    android:textSize="25dp" 
-		    android:text="Phrase" />
+		    android:text="Phrase"
+		    android:drawableTop="@drawable/hint_phrase" />
 
 		<Button
 		    android:id="@+id/hintbuttonb"
@@ -39,7 +30,8 @@ tools:context=".MainActivity" >
 		    android:layout_marginTop="5dp"
 		    android:textSize="25dp" 
 		    android:layout_weight="3"
-		    android:text="Rhyme" />
+		    android:text="Rhyme"
+		    android:drawableTop="@drawable/hint_rhyme" />
 		
 		<Button
 		    android:id="@+id/hintbuttonc"
@@ -49,36 +41,48 @@ tools:context=".MainActivity" >
 		    android:layout_marginTop="5dp"
 		    android:textSize="25dp"	
 		    android:layout_weight="3"
-		    android:text="Word" />
-
-		<TextView 
-			android:id="@+id/scoretext"
-			android:layout_height="50dp"
-			android:layout_width="wrap_content"
-			android:layout_weight="1"
-			android:layout_marginLeft="5dp"
-			android:textSize="25dp" 
-			android:textColor="#EBC06A"
-			android:text="Score:"/>
+		    android:text="Word"
+		    android:drawableTop="@drawable/hint_word" />
 		
-		<TextView
-			android:id="@+id/score"
-			android:layout_height="50dp"
-			android:layout_width="wrap_content"
-			android:layout_marginLeft="5dp"
-			android:textSize="25dp"		
-			android:layout_weight="1"	
-			android:textColor="#EBC06A"
-			android:text="0"/>
-			
+		<LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="5dp"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/scoretext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:text="Score"
+                android:textColor="#EBC06A"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:text="0"
+                android:textColor="#EBC06A"
+                android:textSize="30dp" />
+            
+        </LinearLayout>
+		
 	</LinearLayout>
 
 	<ImageView
 		android:id="@+id/image"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:adjustViewBounds="true"
 		android:cropToPadding="true"
+		android:maxHeight="700dp"
+		android:adjustViewBounds="true"
+		android:scaleType="fitXY"
 		android:layout_centerHorizontal="true"
 		android:layout_centerVertical="true"/>
 
@@ -86,23 +90,23 @@ tools:context=".MainActivity" >
 		android:id="@+id/bottombar"
 		android:layout_alignParentBottom="true"
 		android:layout_width="fill_parent"
-		android:layout_height="75dp">
+		android:layout_height="90dp">
 	    
 	    <Button 
 	        android:id="@+id/micbutton"
 	        android:layout_centerInParent="true"
-	        android:background="@drawable/mic"
-	        android:layout_width="75dp"
-	        android:textSize="25dp" 
-	        android:layout_height="125dp"/>
+	        android:drawableTop="@drawable/mic_clear"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"/>
 	   
 	   	<Button 
 	        android:id="@+id/skipbutton"
 	        android:layout_alignParentRight="true"
 	        android:layout_width="100dp"
-	        android:textSize="25dp" 
-	        android:layout_height="100dp"
-	        android:text="Skip"/>
+	        android:textSize="20dp" 
+	        android:layout_height="match_parent"
+	        android:text="Skip"
+	        android:drawableTop="@drawable/skip" />
 	    
 	</RelativeLayout>
 	

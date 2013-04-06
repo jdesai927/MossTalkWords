@@ -11,8 +11,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
+import android.speech.tts.TextToSpeech;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -34,28 +36,25 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
     /** Called when the activity is first created. */
 	public final static String currentSavedScore = "edu.upenn.cis350.mosstalkwords.currentSavedScore";
 	private ImageView _imgView;
@@ -306,37 +305,35 @@ public class MainActivity extends Activity {
 		currBitmap = null;
 		Bitmap nextBitmap = null;
 		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inSampleSize = 2;
-		options.outHeight = (_imgView.getHeight())/2;
-		options.outWidth= _imgView.getWidth();
 		Log.i("info", buildCachePath(".jpg"));
 		if(!(new File(buildCachePath(".jpg"))).exists()){
 			Log.i("info","in not exists");
-			//AsyncTask<String, Integer, Drawable> at = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				//	"/" +_currentSet.get(_currentIndex)+ ".jpg");
-			//Drawable draw = at.get();
-			//if (draw != null){
-			//_imgView.setImageDrawable(draw);
-		//}
+	
 		}
 		try{
+			 options.inJustDecodeBounds = true;
+			 Bitmap first = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
+			 int width = options.outWidth;
+			 int height = options.outHeight;
+			 int divider = 1;
+			 if (width > 2000 || height > 2000){
+				 divider = Double.valueOf(Math.max(Math.ceil(width/2000.0),Math.ceil(height/2000.0))).intValue();
+			 }
+			 options.inJustDecodeBounds = false;
+			 options.inSampleSize = divider;
 			 currBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
 		}
 		catch(Exception e){
-			
 		}	
-		if (currBitmap == null){
-			AsyncTask<String, Integer, Drawable> atd = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-					"/" +_currentSet.get(_currentIndex)+ ".jpg");
-			Drawable drawd = atd.get();
-			if (drawd != null){
-				Bitmap bitmap = drawableToBitmap(drawd);
-				imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap);
-			}
-		}
 		if (currBitmap != null){
-			_imgView.setScaleType(ScaleType.CENTER_INSIDE);
-			imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
+			if(_currentIndex == 0){
+			_imgView.setImageBitmap(currBitmap);
+			}
+			else{
+				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
+			}
+			//_imgView.setScaleType(ScaleType.CENTER_INSIDE);
+			//imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
 		}
 		
 	}
@@ -345,7 +342,7 @@ public class MainActivity extends Activity {
 	    if (drawable instanceof BitmapDrawable) {
 	        return ((BitmapDrawable)drawable).getBitmap();
 	    }
-
+	    
 	    Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Config.ARGB_8888);
 	    Canvas canvas = new Canvas(bitmap); 
 	    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -474,6 +471,7 @@ public class MainActivity extends Activity {
     		i.putExtra("setscore", _setScore);
     		i.putExtra("newstreak", newStreak);
     		startActivityForResult(i,2);
+
     	}
     	return end;
     }
@@ -503,7 +501,7 @@ public class MainActivity extends Activity {
         
         case 2: //endset result
         	if(resultCode == RESULT_OK) {
-        		
+     
         		//construct intent with number of correct answers to pass back to pickset
         		
         		finish();
@@ -532,10 +530,11 @@ public class MainActivity extends Activity {
 			b.setIcon(R.drawable.checkmark);
 			b.setMessage("You said: " + word_said);
 
+			_feedbackResult="continue";
+
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
 					_totalScore += 3-_numHintsUsed;
 					_streak++;
@@ -552,10 +551,11 @@ public class MainActivity extends Activity {
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("The correct answer was: " + _currentSet.get(_currentIndex));
 			
+			_feedbackResult="continue";
+
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="continue";
 
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak) {
@@ -567,16 +567,18 @@ public class MainActivity extends Activity {
 					nextImage();
 				}
 			});
+			
 		}
 		else {
 			b.setTitle("Not quite!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("You said: " + word_said);
+			
+			_feedbackResult="again";
 
 			b.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="again";
 					_numTries++;
 
 					//check if streak that just ended was the highest
@@ -588,16 +590,31 @@ public class MainActivity extends Activity {
 					_streak = 0;
 				}
 			});
+			
 		}
 
 		ad = b.create();
 		ad.show();  //show the dialog
-
+		//DialogFragment df = new DialogFragment();
+		//df.show(getSupportFragmentManager(), "feedback");
 		
 		//play the audio feedback
 		if(isSuccess) {
 			MediaPlayer mp = MediaPlayer.create(this, R.raw.correct);
 			mp.start();
+			
+			mp.setOnCompletionListener(new OnCompletionListener() {
+
+				public void onCompletion(MediaPlayer mp) {
+					soundGenerator.speak("Great Job!", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			});
+		}
+		else if(_feedbackResult.equals("continue")) {
+			soundGenerator.speak("So close! You'll get it next time.", TextToSpeech.QUEUE_FLUSH, null);
+		}
+		else if(_feedbackResult.equals("again")) {
+			soundGenerator.speak("Almost!  Try again", TextToSpeech.QUEUE_FLUSH, null);
 		}
 
 	}
@@ -640,7 +657,6 @@ public class MainActivity extends Activity {
 		  }
 
 		  _scores.closeDb();
-		  
 	      super.onDestroy();
 	     
 	   }
