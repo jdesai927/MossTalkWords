@@ -331,12 +331,24 @@ public class MainActivity extends Activity {
 			Drawable drawd = atd.get();
 			if (drawd != null){
 				Bitmap bitmap = drawableToBitmap(drawd);
-				imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap);
+				if(_currentIndex == 0)
+				{
+					imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap, true);
+				}
+				else
+					imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap, false);					
 			}
 		}
 		if (currBitmap != null){
 			_imgView.setScaleType(ScaleType.CENTER_INSIDE);
-			imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
+			if(_currentIndex == 0)
+			{
+				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap, true);
+			}
+			else
+			{
+				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap, false);
+			}
 		}
 		
 	}
@@ -354,9 +366,13 @@ public class MainActivity extends Activity {
 	    return bitmap;
 	}
 	
-	public static void imageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
+	public static void imageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image, boolean isFirst) {
         final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out); 
-        final Animation anim_in  = AnimationUtils.loadAnimation(c, android.R.anim.fade_in); 
+        final Animation anim_in  = AnimationUtils.loadAnimation(c, android.R.anim.fade_in);
+        if(isFirst)
+        {
+        	v.setImageBitmap(new_image);
+        }
         anim_out.setAnimationListener(new AnimationListener()
         {
             @Override public void onAnimationStart(Animation animation) {}
