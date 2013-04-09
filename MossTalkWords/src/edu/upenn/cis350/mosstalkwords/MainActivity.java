@@ -199,7 +199,7 @@ public class MainActivity extends FragmentActivity {
 		});
         
     }
-	
+	//Get path to the cache directory file needed 
 	private String buildCachePath(String extension){
 		if(getApplicationContext() != null){
 			if(getApplicationContext().getCacheDir() != null){
@@ -216,26 +216,31 @@ public class MainActivity extends FragmentActivity {
 		return "error encountered";
 	}
 	
+	/**
+	 *Async Task to load the images from the bucket and save them to the cache directory
+	 */
 	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {
 			boolean b = false;
 			try {
-				String extension = ".jpg";
+				//make sure currentSet has been defined already
 				if(_currentSet != null){
 					for (String word: _currentSet){
+						//set url for each image
 						URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-								"/" +word + extension);
-						File file = new File(getApplicationContext().getCacheDir(),word+extension);
-						Log.i("info", file.getAbsolutePath());
+								"/" + word + ".jpg");
+						//create file to be saved in cache directory with word.jpg file naming
+						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
+						//if this file doesn't exist already (not already downloaded)
 						if (file.exists() == false){
-							
-						BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
-						ByteArrayBuffer baf = new ByteArrayBuffer(50);
-						int current = 0;
-						while ((current = bis.read()) != -1){
-							baf.append((byte) current);
-						}
+							//Write the file to the cache dir
+							BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
+							ByteArrayBuffer baf = new ByteArrayBuffer(50);
+							int current = 0;
+							while ((current = bis.read()) != -1){
+								baf.append((byte) current);
+							}
 							FileOutputStream fos = new FileOutputStream(file);
 							fos.write(baf.toByteArray());
 							fos.close();
@@ -244,27 +249,32 @@ public class MainActivity extends FragmentActivity {
 						else{
 							Log.i("info", file.getAbsolutePath() + "  exists!");
 						}
-				}
-			} 
+					}
+				} 
 			}
 			catch (MalformedURLException e1) {
-				e1.printStackTrace();
+				Log.i("info", "MalformedURL exception!");
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.i("info", "IO exception!");
 			}
 		 return b;
 		}
 	}
-
+	
+	/**
+	 * Async task to load hints from the bucket for the current set and store them in a map
+	 */
 	private class LoadHintsTask extends AsyncTask<String, Integer, Boolean>{
 
 		@Override
 		protected Boolean doInBackground(String... set) {
+			//Use a map of each word to an array of it's hints
 			hints = new TreeMap<String, String[]>();
 			boolean b = false;
 			try {
 				URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
 				"/" + "hints.txt");
+				//make a reader from the hints file in the bucket
 				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
 				String lineRead;
 				int linenumber = 0;
@@ -272,6 +282,8 @@ public class MainActivity extends FragmentActivity {
 				String sentence = null;
 				String Rhyme1 = null;
 				String Rhyme2 = null;
+				//read a line, based on which line number it is, we know what kind of hint it is
+				//all based on text file conventions
 				while ((lineRead = hintReader.readLine()) != null){
 					b = true;
 					switch(linenumber) {
@@ -281,9 +293,12 @@ public class MainActivity extends FragmentActivity {
 					case 3: Rhyme2 = lineRead;  break;
 					}
 					linenumber++;
+					//if we've reached an empty line, means we're moving on to next word's hints, reset linenumber
 					if(lineRead.length()==0){ 
 						linenumber = 0;
 					}
+					//if the line number is 4 (current no. of hints + word itself) , all hints for this word have been
+					//read, so add the map key/value of the word to its array of hints 
 					if(linenumber == 4){
 						if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
 							String [] hts = {sentence, Rhyme1, Rhyme2};
@@ -301,41 +316,48 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 	
+	/**
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * Loads the image needed from the cache directory and sets it to the image view
+	 */
 	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
 		currBitmap = null;
-		Bitmap nextBitmap = null;
 		BitmapFactory.Options options = new BitmapFactory.Options();
-		Log.i("info", buildCachePath(".jpg"));
 		if(!(new File(buildCachePath(".jpg"))).exists()){
-			Log.i("info","in not exists");
-	
+			Log.i("info","image does not exist");
 		}
 		try{
+			//First just determine the size of the bitmap file
 			 options.inJustDecodeBounds = true;
 			 Bitmap first = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
 			 int width = options.outWidth;
 			 int height = options.outHeight;
 			 int divider = 1;
+			 //Set a divider value to divide the image size by to make it fit within the desired bounds
 			 if (width > 2000 || height > 2000){
 				 divider = Double.valueOf(Math.max(Math.ceil(width/2000.0),Math.ceil(height/2000.0))).intValue();
 			 }
+			 //Now with the correct sample size, actually load the bitmap
 			 options.inJustDecodeBounds = false;
 			 options.inSampleSize = divider;
 			 currBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
 		}
 		catch(Exception e){
+			Log.i("info", "Bitmap Exception!");
 		}	
 		if (currBitmap != null){
+			//If it's the first image of the set, just display it
 			if(_currentIndex == 0){
-			_imgView.setImageBitmap(currBitmap);
+				_imgView.setImageBitmap(currBitmap);
 			}
+			//If not, use animation to change the image
 			else{
 				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
 			}
-			//_imgView.setScaleType(ScaleType.CENTER_INSIDE);
-			//imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
-		}
-		
+		}	
 	}
 	
 	public static Bitmap drawableToBitmap (Drawable drawable) {
@@ -437,6 +459,10 @@ public class MainActivity extends FragmentActivity {
 		}
     }
     
+    /**
+     * @return true if set has been completed, false if not
+     * Method to check if the set has been completed and record values as necessary for end of set
+     */
     private boolean checkEndOfSet(){
     	boolean end = false;
     	if(_currentSet == null){
@@ -471,14 +497,12 @@ public class MainActivity extends FragmentActivity {
     		i.putExtra("setscore", _setScore);
     		i.putExtra("newstreak", newStreak);
     		startActivityForResult(i,2);
-
     	}
     	return end;
     }
     
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    	
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
         case 1:  //speech recognition result
@@ -498,15 +522,11 @@ public class MainActivity extends FragmentActivity {
             }
             break;
         
-        
         case 2: //endset result
         	if(resultCode == RESULT_OK) {
-     
-        		//construct intent with number of correct answers to pass back to pickset
-        		
+        		//construct intent with number of correct answers to pass back to pickset	
         		finish();
         	}
-        
         }
     }
     
@@ -517,12 +537,10 @@ public class MainActivity extends FragmentActivity {
 	 * @param word_said  the word that the user said
 	 */
 	private void giveFeedback(boolean isSuccess, String word_said) {
-
 		//build the dialog
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 
 		b.setCancelable(false);
-
 
 		if(isSuccess) {  //only give them continue button if they got it right
 			_numCorrect++;
@@ -580,19 +598,15 @@ public class MainActivity extends FragmentActivity {
 
 				public void onClick(DialogInterface dialog, int which) {
 					_numTries++;
-
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak) {
 						_scores.setHighestStreak(_streak);
 						newStreak = true;
-					}
-					
+					}	
 					_streak = 0;
 				}
-			});
-			
+			});	
 		}
-
 		ad = b.create();
 		ad.show();  //show the dialog
 		//DialogFragment df = new DialogFragment();
@@ -616,7 +630,6 @@ public class MainActivity extends FragmentActivity {
 		else if(_feedbackResult.equals("again")) {
 			soundGenerator.speak("Almost!  Try again", TextToSpeech.QUEUE_FLUSH, null);
 		}
-
 	}
 	
 	 public static void trimCache(Context context) {
