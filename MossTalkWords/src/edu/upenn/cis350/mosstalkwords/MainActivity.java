@@ -11,8 +11,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
+import android.speech.tts.TextToSpeech;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -34,28 +36,25 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
     /** Called when the activity is first created. */
 	public final static String currentSavedScore = "edu.upenn.cis350.mosstalkwords.currentSavedScore";
 	private ImageView _imgView;
@@ -87,10 +86,10 @@ public class MainActivity extends Activity {
 
 	public AlertDialog ad;
 	public int _numCorrect = 0;
-	
+
 	private AsyncTask<String, Integer, Boolean> downloadHints;
 	private AsyncTask<String, Integer, Boolean> downloadFiles;
-	
+
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -193,14 +192,14 @@ public class MainActivity extends Activity {
 					_scores.setHighestStreak(_streak);
 					newStreak = true;
 				}
-				
+
 				_streak = 0;
 				nextImage();
 			}
 		});
         
     }
-	
+	//Get path to the cache directory file needed 
 	private String buildCachePath(String extension){
 		if(getApplicationContext() != null){
 			if(getApplicationContext().getCacheDir() != null){
@@ -216,27 +215,32 @@ public class MainActivity extends Activity {
 		}
 		return "error encountered";
 	}
-	
+
+	/**
+	 *Async Task to load the images from the bucket and save them to the cache directory
+	 */
 	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {
 			boolean b = false;
 			try {
-				String extension = ".jpg";
+				//make sure currentSet has been defined already
 				if(_currentSet != null){
 					for (String word: _currentSet){
+						//set url for each image
 						URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-								"/" +word + extension);
-						File file = new File(getApplicationContext().getCacheDir(),word+extension);
-						Log.i("info", file.getAbsolutePath());
+								"/" + word + ".jpg");
+						//create file to be saved in cache directory with word.jpg file naming
+						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
+						//if this file doesn't exist already (not already downloaded)
 						if (file.exists() == false){
-							
-						BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
-						ByteArrayBuffer baf = new ByteArrayBuffer(50);
-						int current = 0;
-						while ((current = bis.read()) != -1){
-							baf.append((byte) current);
-						}
+							//Write the file to the cache dir
+							BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
+							ByteArrayBuffer baf = new ByteArrayBuffer(50);
+							int current = 0;
+							while ((current = bis.read()) != -1){
+								baf.append((byte) current);
+							}
 							FileOutputStream fos = new FileOutputStream(file);
 							fos.write(baf.toByteArray());
 							fos.close();
@@ -245,27 +249,32 @@ public class MainActivity extends Activity {
 						else{
 							Log.i("info", file.getAbsolutePath() + "  exists!");
 						}
-				}
-			} 
+					}
+				} 
 			}
 			catch (MalformedURLException e1) {
-				e1.printStackTrace();
+				Log.i("info", "MalformedURL exception!");
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.i("info", "IO exception!");
 			}
 		 return b;
 		}
 	}
 
+	/**
+	 * Async task to load hints from the bucket for the current set and store them in a map
+	 */
 	private class LoadHintsTask extends AsyncTask<String, Integer, Boolean>{
 
 		@Override
 		protected Boolean doInBackground(String... set) {
+			//Use a map of each word to an array of it's hints
 			hints = new TreeMap<String, String[]>();
 			boolean b = false;
 			try {
 				URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
 				"/" + "hints.txt");
+				//make a reader from the hints file in the bucket
 				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
 				String lineRead;
 				int linenumber = 0;
@@ -273,6 +282,8 @@ public class MainActivity extends Activity {
 				String sentence = null;
 				String Rhyme1 = null;
 				String Rhyme2 = null;
+				//read a line, based on which line number it is, we know what kind of hint it is
+				//all based on text file conventions
 				while ((lineRead = hintReader.readLine()) != null){
 					b = true;
 					switch(linenumber) {
@@ -282,9 +293,12 @@ public class MainActivity extends Activity {
 					case 3: Rhyme2 = lineRead;  break;
 					}
 					linenumber++;
+					//if we've reached an empty line, means we're moving on to next word's hints, reset linenumber
 					if(lineRead.length()==0){ 
 						linenumber = 0;
 					}
+					//if the line number is 4 (current no. of hints + word itself) , all hints for this word have been
+					//read, so add the map key/value of the word to its array of hints 
 					if(linenumber == 4){
 						if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
 							String [] hts = {sentence, Rhyme1, Rhyme2};
@@ -301,58 +315,51 @@ public class MainActivity extends Activity {
 		 return b;
 		}
 	}
-	
+
+	/**
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * Loads the image needed from the cache directory and sets it to the image view
+	 */
 	private void loadImage() throws ClientProtocolException, IOException, InterruptedException, ExecutionException {	
 		currBitmap = null;
-		Bitmap nextBitmap = null;
 		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inSampleSize = 2;
-		options.outHeight = (_imgView.getHeight())/2;
-		options.outWidth= _imgView.getWidth();
-		Log.i("info", buildCachePath(".jpg"));
 		if(!(new File(buildCachePath(".jpg"))).exists()){
-			Log.i("info","in not exists");
-			//AsyncTask<String, Integer, Drawable> at = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-				//	"/" +_currentSet.get(_currentIndex)+ ".jpg");
-			//Drawable draw = at.get();
-			//if (draw != null){
-			//_imgView.setImageDrawable(draw);
-		//}
+			Log.i("info","image does not exist");
 		}
 		try{
+			//First just determine the size of the bitmap file
+			 options.inJustDecodeBounds = true;
+			 Bitmap first = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
+			 int width = options.outWidth;
+			 int height = options.outHeight;
+			 int divider = 1;
+			 //Set a divider value to divide the image size by to make it fit within the desired bounds
+			 if (width > 2000 || height > 2000){
+				 divider = Double.valueOf(Math.max(Math.ceil(width/2000.0),Math.ceil(height/2000.0))).intValue();
+			 }
+			 //Now with the correct sample size, actually load the bitmap
+			 options.inJustDecodeBounds = false;
+			 options.inSampleSize = divider;
 			 currBitmap = BitmapFactory.decodeFile(buildCachePath(".jpg"),options);
 		}
 		catch(Exception e){
-			
+			Log.i("info", "Bitmap Exception!");
 		}	
-		if (currBitmap == null){
-			AsyncTask<String, Integer, Drawable> atd = new LoadMissingImageTask().execute("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
-					"/" +_currentSet.get(_currentIndex)+ ".jpg");
-			Drawable drawd = atd.get();
-			if (drawd != null){
-				Bitmap bitmap = drawableToBitmap(drawd);
-				if(_currentIndex == 0)
-				{
-					imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap, true);
-				}
-				else
-					imageViewAnimatedChange(getApplicationContext(), _imgView, bitmap, false);					
-			}
-		}
 		if (currBitmap != null){
-			_imgView.setScaleType(ScaleType.CENTER_INSIDE);
-			if(_currentIndex == 0)
-			{
-				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap, true);
+			//If it's the first image of the set, just display it
+			if(_currentIndex == 0){
+				_imgView.setImageBitmap(currBitmap);
 			}
-			else
-			{
-				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap, false);
+			//If not, use animation to change the image
+			else{
+				imageViewAnimatedChange(getApplicationContext(), _imgView, currBitmap);
 			}
-		}
-		
+		}	
 	}
-	
+
 	public static Bitmap drawableToBitmap (Drawable drawable) {
 	    if (drawable instanceof BitmapDrawable) {
 	        return ((BitmapDrawable)drawable).getBitmap();
@@ -365,14 +372,10 @@ public class MainActivity extends Activity {
 
 	    return bitmap;
 	}
-	
-	public static void imageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image, boolean isFirst) {
+
+	public static void imageViewAnimatedChange(Context c, final ImageView v, final Bitmap new_image) {
         final Animation anim_out = AnimationUtils.loadAnimation(c, android.R.anim.fade_out); 
-        final Animation anim_in  = AnimationUtils.loadAnimation(c, android.R.anim.fade_in);
-        if(isFirst)
-        {
-        	v.setImageBitmap(new_image);
-        }
+        final Animation anim_in  = AnimationUtils.loadAnimation(c, android.R.anim.fade_in); 
         anim_out.setAnimationListener(new AnimationListener()
         {
             @Override public void onAnimationStart(Animation animation) {}
@@ -390,7 +393,7 @@ public class MainActivity extends Activity {
         });
         v.startAnimation(anim_out);
     }
-	
+
 
 	private void playSoundText(String hint){
 		if (_listenerIsReady == false){
@@ -428,7 +431,7 @@ public class MainActivity extends Activity {
 			_listenerIsReady = true;
 		}
 	}
-	
+
     public void nextImage(){
     	_currentIndex++;
 		_rhymeUsed = 0;
@@ -456,6 +459,10 @@ public class MainActivity extends Activity {
 		}
     }
     
+    /**
+     * @return true if set has been completed, false if not
+     * Method to check if the set has been completed and record values as necessary for end of set
+     */
     private boolean checkEndOfSet(){
     	boolean end = false;
     	if(_currentSet == null){
@@ -496,7 +503,6 @@ public class MainActivity extends Activity {
     
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    	
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
         case 1:  //speech recognition result
@@ -516,15 +522,11 @@ public class MainActivity extends Activity {
             }
             break;
         
-        
         case 2: //endset result
         	if(resultCode == RESULT_OK) {
-        		
-        		//construct intent with number of correct answers to pass back to pickset
-        		
+        		//construct intent with number of correct answers to pass back to pickset	
         		finish();
         	}
-        
         }
     }
     
@@ -535,12 +537,10 @@ public class MainActivity extends Activity {
 	 * @param word_said  the word that the user said
 	 */
 	private void giveFeedback(boolean isSuccess, String word_said) {
-
 		//build the dialog
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 
 		b.setCancelable(false);
-
 
 		if(isSuccess) {  //only give them continue button if they got it right
 			_numCorrect++;
@@ -548,10 +548,11 @@ public class MainActivity extends Activity {
 			b.setIcon(R.drawable.checkmark);
 			b.setMessage("You said: " + word_said);
 
+			_feedbackResult="continue";
+
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="continue";
 					_setScore += 3-_numHintsUsed;
 					_totalScore += 3-_numHintsUsed;
 					_streak++;
@@ -567,57 +568,70 @@ public class MainActivity extends Activity {
 			b.setTitle("Try the next picture!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("The correct answer was: " + _currentSet.get(_currentIndex));
-			
+
+			_feedbackResult="continue";
+
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="continue";
 
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak) {
 						_scores.setHighestStreak(_streak);
 						newStreak = true;
 					}
-					
+
 					_streak = 0;
 					nextImage();
 				}
 			});
+
 		}
 		else {
 			b.setTitle("Not quite!");
 			b.setIcon(R.drawable.wrong);
 			b.setMessage("You said: " + word_said);
 
+			_feedbackResult="again";
+
 			b.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
-					_feedbackResult="again";
 					_numTries++;
-
 					//check if streak that just ended was the highest
 					if(_scores.getHighestStreak() < _streak) {
 						_scores.setHighestStreak(_streak);
 						newStreak = true;
-					}
-					
+					}	
 					_streak = 0;
 				}
-			});
+			});	
 		}
-
 		ad = b.create();
 		ad.show();  //show the dialog
+		//DialogFragment df = new DialogFragment();
+		//df.show(getSupportFragmentManager(), "feedback");
 
-		
 		//play the audio feedback
 		if(isSuccess) {
 			MediaPlayer mp = MediaPlayer.create(this, R.raw.correct);
 			mp.start();
-		}
 
+			mp.setOnCompletionListener(new OnCompletionListener() {
+
+				public void onCompletion(MediaPlayer mp) {
+					soundGenerator.speak("Great Job!", TextToSpeech.QUEUE_FLUSH, null);
+				}
+			});
+		}
+		else if(_feedbackResult.equals("continue")) {
+			soundGenerator.speak("So close! You'll get it next time.", TextToSpeech.QUEUE_FLUSH, null);
+		}
+		else if(_feedbackResult.equals("again")) {
+			soundGenerator.speak("Almost!  Try again", TextToSpeech.QUEUE_FLUSH, null);
+		}
 	}
-	
+
 	 public static void trimCache(Context context) {
 	      try {
 	         File dir = context.getCacheDir();
@@ -656,28 +670,27 @@ public class MainActivity extends Activity {
 		  }
 
 		  _scores.closeDb();
-		  
 	      super.onDestroy();
-	     
+
 	   }
 
 	   @Override
 	    protected void onPause() {
 	        super.onPause();
-	       
+
 	    }
-	   
+
 	   @Override
 	    protected void onStop() {
 	        super.onStop();
-	      
+
 	    }
 
 	    @Override
 	    protected void onResume() {
 	        super.onResume();
 	    }
-	    
+
 		private class LoadMissingImageTask extends AsyncTask<String, Integer, Drawable>{
 
 			@Override
@@ -707,12 +720,12 @@ public class MainActivity extends Activity {
 			}
 
 			}    
-		
-		
+
+
 		public AsyncTask.Status getDownloadHintsStatus() {
 			return downloadHints.getStatus();
 		}
-		
+
 		public AsyncTask.Status getDownloadFilesStatus() {
 			return downloadFiles.getStatus();
 		}
