@@ -67,6 +67,7 @@ public class MainActivity extends FragmentActivity {
 	private Button _hintRhymeButton;
 	private Button _hintPronounceButton;
 	private Button _micButton;
+	private Button _helpButton;
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
 	private Bitmap currBitmap = null;
@@ -152,6 +153,7 @@ public class MainActivity extends FragmentActivity {
         _hintPronounceButton = (Button) findViewById(R.id.hintbuttonc);
         _micButton = (Button) findViewById(R.id.micbutton);
         _skipButton = (Button) findViewById(R.id.skipbutton);
+        _helpButton = (Button) findViewById(R.id.helpbutton);
         
       
         _mediaPlayer = new MediaPlayer();
@@ -178,6 +180,13 @@ public class MainActivity extends FragmentActivity {
 				playSoundText("word");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;
+			}
+		});
+        
+        _helpButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent i = new Intent(getApplicationContext(), HelpTextActivity.class);
+				startActivity(i);
 			}
 		});
         
