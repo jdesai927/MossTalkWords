@@ -128,7 +128,7 @@ public class PickSet extends Activity {
 		i.putStringArrayListExtra(currentSet, getSet(category+difficulty));
 		//Log.i("info", category+difficulty);
 		//Log.i("info", catToWords.keySet().toString());
-		startActivity(i);
+		startActivityForResult(i,1);
 	}
 
 	public ArrayList<String> getSet(String key){

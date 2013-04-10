@@ -122,8 +122,6 @@ public class EndSet extends Activity {
 			
 			publishProgress(-1);
 			
-			totalscoretext.setText("Total Score: " + scores[0].intValue());
-			
 			while(this.isCancelled() == false && scores[0] <= scores[1]) {	
 				
 				publishProgress(scores[0]); //Android calls onProgressUpdate

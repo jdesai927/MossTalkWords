@@ -535,7 +535,7 @@ public class MainActivity extends FragmentActivity {
         
         case 2: //endset result
         	if(resultCode == RESULT_OK) {
-        		//construct intent with number of correct answers to pass back to pickset	
+        		setResult(RESULT_OK);
         		finish();
         	}
         }
