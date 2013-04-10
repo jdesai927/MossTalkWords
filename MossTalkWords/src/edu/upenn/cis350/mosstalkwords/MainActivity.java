@@ -49,6 +49,7 @@ import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -67,6 +68,7 @@ public class MainActivity extends FragmentActivity {
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
 	private Bitmap currBitmap = null;
+    private TextView st;
 
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
@@ -107,7 +109,7 @@ public class MainActivity extends FragmentActivity {
         _streak = 0;
         
         //set score view
-        TextView st = (TextView) findViewById(R.id.score);
+        st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_totalScore));
     	
     	//download images, download hints
@@ -433,6 +435,7 @@ public class MainActivity extends FragmentActivity {
 	}
 
     public void nextImage(){
+		
     	_currentIndex++;
 		_rhymeUsed = 0;
 		if(checkEndOfSet() == true){
@@ -559,6 +562,12 @@ public class MainActivity extends FragmentActivity {
 		        	TextView st = (TextView) findViewById(R.id.score);
 
 		        	st.setText(Integer.toString(_totalScore));
+		        	
+		    		RotateAnimation rotateTextAnimation = new RotateAnimation(0, 360, 40, 30);
+		    		rotateTextAnimation.setDuration(2000);
+		    		
+		    		st.startAnimation(rotateTextAnimation);
+		    		
 		        	nextImage();
 				}
 			});
