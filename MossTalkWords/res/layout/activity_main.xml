@@ -4,7 +4,7 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:background="#333333"
 tools:context=".MainActivity" >
-
+        
 	<LinearLayout
 		android:id="@+id/topbar"
 		android:layout_width="fill_parent"
@@ -75,24 +75,38 @@ tools:context=".MainActivity" >
         </LinearLayout>
 		
 	</LinearLayout>
-
-	<ImageView
+		
+		<ImageView
 		android:id="@+id/image"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
+		android:layout_below="@+id/progressBarGame"
+		android:layout_above="@+id/bottombar"
 		android:cropToPadding="true"
-		android:maxHeight="700dp"
+		android:maxHeight="500dp"
 		android:adjustViewBounds="true"
-		android:scaleType="fitXY"
+		android:scaleType="fitCenter"
 		android:layout_centerHorizontal="true"
 		android:layout_centerVertical="true"/>
-
+		
+		 <ProgressBar
+            android:id="@+id/progressBarGame"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="25dp"
+            android:layout_below="@+id/topbar"
+            android:layout_height="wrap_content" android:max="100"/>
+		 
+	    
+	
 	<RelativeLayout 
 		android:id="@+id/bottombar"
 		android:layout_alignParentBottom="true"
 		android:layout_width="fill_parent"
 		android:layout_height="120dp">
 	    
+	  
 	    <Button 
 	        android:id="@+id/micbutton"
 	        android:layout_centerInParent="true"
@@ -112,5 +126,5 @@ tools:context=".MainActivity" >
 	        android:drawableTop="@drawable/skip" />
 	    
 	</RelativeLayout>
-	
+
 </RelativeLayout>
