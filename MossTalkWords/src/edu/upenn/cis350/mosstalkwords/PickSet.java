@@ -29,8 +29,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 public class PickSet extends Activity {
@@ -52,74 +52,64 @@ public class PickSet extends Activity {
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		
-		setContentView(R.layout.activity_pick);
-		
+		setContentView(R.layout.activity_pick);	
 		scores = new Scores(getApplicationContext());
-	
-		
 		//initialize category and difficulty
 		category = "livingthings";
 		difficulty = "easy";
-		
 		downloadCatsWords = new LoadCategoriesWords().execute("");
 	}
 	
-	 @Override
-	    protected void onRestart() {
-	        super.onRestart();
-	        updateListViewInfo();
+	@Override 
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {     
+	  super.onActivityResult(requestCode, resultCode, data); 
+	  updateListViewInfo();
+	}
+	
+	@Override 
+	public void onRestart() {     
+	  super.onRestart(); 
+	  updateListViewInfo();
+	}
+		 
+	 private ArrayList<Set> getSetList(){
+		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
+		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
+		 ArrayList<Set> setlist = new ArrayList<Set>();
+		 for (String cat : cats){
+			 for (String diff : diffs){
+				 String category = cat+diff;
+				 category = category.replaceAll("\\s","");
+				 category = category.toLowerCase();
+				 String score = getPercentageOfCategoryCompleted(category);
+				 Log.i("info", score);
+				 setlist.add(new Set(score, cat, diff));
+			 }
+		 }
+		 return setlist;
 	 }
-	 
 	 public void setListViewInfo(){
-		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
-		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
-		 ArrayList<Set> sets = new ArrayList<Set>();
-		 for (String cat : cats){
-			 for (String diff : diffs){
-				 String category = cat+diff;
-				 category = category.replaceAll("\\s","");
-				 category = category.toLowerCase();
-				 String score = getPercentageOfCategoryCompleted(category);
-				 sets.add(new Set(score, cat, diff));
-			 }
-		 }
-		
-		 
-		 SetAdapter adapter = new SetAdapter(this,R.layout.listview_item, sets);
-		 
-		 lv = (ListView)findViewById(R.id.listView1);
-	        
-	        View header = (View)getLayoutInflater().inflate(R.layout.listview_header, null);
-	        lv.addHeaderView(header);
-	        lv.setAdapter(adapter);
-	        lv.setOnItemClickListener(new SetSelectedListener());
-		 }
-		 
+		ArrayList<Set> sets = getSetList();
+		SetAdapter adapter= new SetAdapter(this,R.layout.listview_item, sets); 
+		lv = (ListView)findViewById(R.id.listView1);
+		View header = (View)getLayoutInflater().inflate(R.layout.listview_header, null);
+		lv.addHeaderView(header);
+		lv.setAdapter(adapter);
+		lv.setOnItemClickListener(new SetSelectedListener());      
+	}
+	 
 	 public void updateListViewInfo(){
-		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
-		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
-		 ArrayList<Set> sets = new ArrayList<Set>();
-		 for (String cat : cats){
-			 for (String diff : diffs){
-				 String category = cat+diff;
-				 category = category.replaceAll("\\s","");
-				 category = category.toLowerCase();
-				 String score = getPercentageOfCategoryCompleted(category);
-				 sets.add(new Set(score, cat, diff));
-			 }
-		 }
-		
-		 
-		 SetAdapter adapter = new SetAdapter(this,R.layout.listview_item, sets);
-		 
+		 ArrayList<Set> newSetList = getSetList();
 		 lv = (ListView)findViewById(R.id.listView1);
-	        
-	        lv.setAdapter(adapter);
-	        lv.setOnItemClickListener(new SetSelectedListener());
-	        lv.invalidate();
-		 }
-	 
-	 
+		 HeaderViewListAdapter hlva = (HeaderViewListAdapter) lv.getAdapter();
+		 ArrayAdapter<Set> adap = (ArrayAdapter<Set>) hlva.getWrappedAdapter();
+		 if(adap != null){
+			 adap.clear();
+			 for(Set set : newSetList){
+				 adap.add(set);
+			 }
+		 }   
+	 }
 	    
 	
 	//Method that returns the percentage of the category that's been completed (eg. 8/10, 0/10 etc.)
@@ -136,9 +126,9 @@ public class PickSet extends Activity {
 		Intent i = new Intent(this, MainActivity.class);
 		i.putExtra(currentSetPath, category+difficulty);
 		i.putStringArrayListExtra(currentSet, getSet(category+difficulty));
-		Log.i("info", category+difficulty);
-		Log.i("info", catToWords.keySet().toString());
-		startActivity(i);
+		//Log.i("info", category+difficulty);
+		//Log.i("info", catToWords.keySet().toString());
+		startActivityForResult(i,1);
 	}
 
 	public ArrayList<String> getSet(String key){
@@ -149,7 +139,6 @@ public class PickSet extends Activity {
 
 		@SuppressLint("DefaultLocale")
 		public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
-			
 			Set chosen = (Set)parent.getItemAtPosition(pos);
 			category = chosen.category;
 			category = category.replaceAll("\\s","");
@@ -157,12 +146,9 @@ public class PickSet extends Activity {
 			difficulty = chosen.difficulty;
 			difficulty = difficulty.toLowerCase();
 			start(view);
-			Log.i("info", "Got click: " + category + difficulty);
 		}
 	}
 	
-	
-
 	private class LoadCategoriesWords extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {
@@ -219,8 +205,6 @@ public class PickSet extends Activity {
 
 	}
 	
-	
-
 	private class LoadOneFile extends AsyncTask<String, Integer, Boolean>{
 		@Override
 		protected Boolean doInBackground(String... set) {

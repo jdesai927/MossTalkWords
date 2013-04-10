@@ -3,11 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#333333"
+    android:background="@color/grey"
     tools:context=".EndSet" >
 
     <LinearLayout
-        android:id="@+id/topbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
@@ -20,22 +19,21 @@
             android:layout_marginBottom="10dp"
             android:gravity="center"
             android:text="Set Complete!"
-            android:textColor="#EBC06A"
-            android:textSize="20sp" />
+            android:textColor="@color/yellow"
+            android:textSize="25sp" />
 
         <TextView
             android:id="@+id/endset_set"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="20dp"
             android:gravity="center"
             android:text="Living Things Easy"
-            android:textColor="#EBC06A"
-            android:textSize="25sp"
+            android:textColor="@color/yellow"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <LinearLayout
-            android:id="@+id/topbar"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
@@ -46,8 +44,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Set Score: "
-                android:textColor="#FFFFFF"
-                android:textSize="20sp" />
+                android:textColor="@color/white"
+                android:textSize="25sp" />
 
             <TextView
                 android:id="@+id/endset_highscore"
@@ -55,8 +53,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="right"
                 android:text="High Score: "
-                android:textColor="#FFFFFF"
-                android:textSize="20sp" />
+                android:textColor="@color/white"
+                android:textSize="25sp" />
         </LinearLayout>
 
         <TextView
@@ -66,8 +64,8 @@
             android:layout_marginTop="20dp"
             android:gravity="center"
             android:text="Total Score: "
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
+            android:textColor="@color/white"
+            android:textSize="25sp" />
 
         <TextView
             android:id="@+id/endset_streak"
@@ -75,8 +73,8 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Longest Streak: "
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
+            android:textColor="@color/white"
+            android:textSize="25sp" />
 
         <Button
             android:id="@+id/endset_button"
@@ -86,7 +84,7 @@
             android:gravity="center"
             android:onClick="onEndButtonClick"
             android:text="Finish" 
-            android:textSize="20sp"/>
+            android:textSize="25sp"/>
     </LinearLayout>
 
 </RelativeLayout>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MossTalkWords</string>
+    <string name="app_name">PicSpeak</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="welcome">Welcome to Moss Talk Words!</string>
+    <string name="welcome">Welcome to PicSpeak!</string>
     <string name="diff">Choose a difficulty</string>
     <string name="cat">Choose a category</string>
     <string-array name="stimulus_array">
@@ -61,6 +61,11 @@
         <item>cinnamon</item>
         <item>radio</item>
     </string-array>
-
+    
+    <color name="yellow">#EBC06A</color>
+	<color name="green">#288C8C</color>
+    <color name="grey">#333333</color>
+    <color name="white">#FFFFFF</color>
+    
 </resources>
 
