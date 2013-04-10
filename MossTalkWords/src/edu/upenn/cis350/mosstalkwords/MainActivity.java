@@ -28,6 +28,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -52,6 +53,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,6 +71,9 @@ public class MainActivity extends FragmentActivity {
 	private MediaPlayer _mediaPlayer;
 	private Bitmap currBitmap = null;
     private TextView st;
+
+	private ProgressBar progressBarSet;
+
 
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
@@ -112,6 +117,11 @@ public class MainActivity extends FragmentActivity {
         st = (TextView) findViewById(R.id.score);
     	st.setText(Integer.toString(_totalScore));
     	
+    	progressBarSet = (ProgressBar)findViewById(R.id.progressBarGame);
+    	Resources res = getResources();
+    	progressBarSet.setProgressDrawable(res.getDrawable( R.drawable.game_progress));
+    	progressBarSet.setMax(100);
+    	progressBarSet.setProgress(0);
     	//download images, download hints
     	downloadHints = new LoadHintsTask().execute("");
         downloadFiles = new LoadFilesTask().execute("");
@@ -435,7 +445,11 @@ public class MainActivity extends FragmentActivity {
 	}
 
     public void nextImage(){
-		
+
+    	double inc = 100.00/(_currentSet.size());
+    	int currprog = progressBarSet.getProgress();
+    	progressBarSet.setProgress(currprog + (int)Math.round(inc));
+
     	_currentIndex++;
 		_rhymeUsed = 0;
 		if(checkEndOfSet() == true){
@@ -527,7 +541,7 @@ public class MainActivity extends FragmentActivity {
         
         case 2: //endset result
         	if(resultCode == RESULT_OK) {
-        		//construct intent with number of correct answers to pass back to pickset	
+        		setResult(RESULT_OK);
         		finish();
         	}
         }
