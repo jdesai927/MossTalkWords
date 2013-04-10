@@ -61,6 +61,11 @@
         <item>cinnamon</item>
         <item>radio</item>
     </string-array>
-
+    
+    <color name="yellow">#EBC06A</color>
+	<color name="green">#288C8C</color>
+    <color name="grey">#333333</color>
+    <color name="white">#FFFFFF</color>
+    
 </resources>
 
