@@ -108,12 +108,14 @@ tools:context=".MainActivity" >
 	    
 	    <Button 
 	        android:id="@+id/helpbutton"
+	        android:layout_marginTop="15dp"
+	        android:layout_marginBottom="15dp"
 	        android:layout_alignParentLeft="true"
 	        android:text="Help"
-	        android:textSize="30dp"
-	        android:layout_marginTop="10dp"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"/>
+	        android:layout_width="100dp"
+	        android:textSize="20dp" 
+	        android:layout_height="match_parent"
+	        android:drawableTop="@drawable/help"/>
 	  
 	    <Button 
 	        android:id="@+id/micbutton"
