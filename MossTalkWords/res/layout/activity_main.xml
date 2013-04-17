@@ -59,8 +59,8 @@ tools:context=".MainActivity" >
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:text="Score"
-                android:textColor="@color/yellow"
-                android:textSize="40dp" />
+                android:textColor="@color/white"
+                android:textSize="35dp" />
 
             <TextView
                 android:id="@+id/score"

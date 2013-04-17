@@ -29,6 +29,7 @@
             android:screenOrientation="portrait"/>
         
         <activity android:name="edu.upenn.cis350.mosstalkwords.HelpTextActivity" 
+            android:theme="@android:style/Theme.Dialog"
             android:screenOrientation="portrait"/>
         
         <activity android:name="edu.upenn.cis350.mosstalkwords.EndSet" 

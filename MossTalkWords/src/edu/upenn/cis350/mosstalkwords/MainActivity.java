@@ -33,6 +33,8 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -40,6 +42,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -71,7 +74,7 @@ public class MainActivity extends FragmentActivity {
 	private Button _skipButton;
 	private MediaPlayer _mediaPlayer;
 	private Bitmap currBitmap = null;
-    private TextView st;
+    public TextView st;
 
 	private ProgressBar progressBarSet;
 
@@ -458,7 +461,7 @@ public class MainActivity extends FragmentActivity {
     	double inc = 100.00/(_currentSet.size());
     	int currprog = progressBarSet.getProgress();
     	progressBarSet.setProgress(currprog + (int)Math.round(inc));
-
+    	
     	_currentIndex++;
 		_rhymeUsed = 0;
 		if(checkEndOfSet() == true){
@@ -586,10 +589,7 @@ public class MainActivity extends FragmentActivity {
 
 		        	st.setText(Integer.toString(_totalScore));
 		        	
-		    		RotateAnimation rotateTextAnimation = new RotateAnimation(0, 360, 40, 30);
-		    		rotateTextAnimation.setDuration(2000);
-		    		
-		    		st.startAnimation(rotateTextAnimation);
+		        	animateScore();
 		    		
 		        	nextImage();
 				}
@@ -664,6 +664,31 @@ public class MainActivity extends FragmentActivity {
 		}
 	}
 
+	public void animateScore() {
+    	st.setTextColor(Color.RED);
+    	st.setTypeface(null, Typeface.BOLD);
+    	st.setTextSize(40);
+    	
+		RotateAnimation rotateTextAnimation = new RotateAnimation(0, 360, 40, 30);
+		rotateTextAnimation.setDuration(2000);
+		
+		st.startAnimation(rotateTextAnimation);
+		Handler mHandler = new Handler();
+		mHandler.postDelayed(runnable, 3000);
+	
+	}
+	
+	Runnable runnable = new Runnable() {
+
+		@Override
+		public void run() {
+			st.setTextColor(Color.WHITE);
+			st.setTypeface(null, Typeface.NORMAL);
+			st.setTextSize(35);
+		}
+		
+	};
+	
 	 public static void trimCache(Context context) {
 	      try {
 	         File dir = context.getCacheDir();
