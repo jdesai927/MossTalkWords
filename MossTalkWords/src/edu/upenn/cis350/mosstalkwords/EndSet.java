@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class EndSet extends Activity {
@@ -19,6 +20,7 @@ public class EndSet extends Activity {
 	public boolean newStreak;
 	
 	TextView totalscoretext;
+	TextView setscoretext;
 	
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -31,8 +33,8 @@ public class EndSet extends Activity {
 		
 		//the set score
 		setscore = getIntent().getIntExtra("setscore", 0);
-		TextView setscoretext = (TextView) findViewById(R.id.endset_setscore);
-		setscoretext.setText("Set Score: " + setscore);
+		setscoretext = (TextView) findViewById(R.id.endset_setscore);
+		setscoretext.setText(Integer.toString(setscore));
 		
 		Scores scores = new Scores(getApplicationContext());
 		
@@ -43,6 +45,10 @@ public class EndSet extends Activity {
 			//highlight the fact that they got a new high score
 			highscoretext.setTextColor(Color.parseColor("#288C8C"));
 			highscoretext.setTypeface(null, Typeface.BOLD);
+			
+			//display the high score stamp
+			ImageView highscorestamp = (ImageView) findViewById(R.id.endset_stamp);
+			highscorestamp.setImageResource(R.drawable.high_score_stamp);
 		}
 		
 		//the total score  (set it to what it was before this set, because we will
@@ -50,13 +56,12 @@ public class EndSet extends Activity {
 		int prev_total = scores.getTotalScore() - setscore;
 		
 		totalscoretext = (TextView) findViewById(R.id.endset_totalscore);
-		totalscoretext.setText("Total Score: " + prev_total);
+		totalscoretext.setText(Integer.toString(prev_total));
 		
 		//the streak
 		newStreak = getIntent().getBooleanExtra("newstreak", false);
 		TextView streaktext = (TextView) findViewById(R.id.endset_streak);
 		streaktext.setText("Longest Streak: " + scores.getHighestStreak());
-		streaktext.setTypeface(null,Typeface.ITALIC);
 		
 		if(newStreak && scores.getHighestStreak() > 0) {
 			//highlight the fact that they got a new streak 
@@ -66,7 +71,7 @@ public class EndSet extends Activity {
 		
 		
 		//call the asynctask to increment the previous total to the new total
-		new IncScore().execute(prev_total, scores.getTotalScore());
+		new IncScore().execute(prev_total, scores.getTotalScore(), setscore);
 		
 	}
 	
@@ -110,7 +115,8 @@ public class EndSet extends Activity {
 	
 	/**
 	 * AsyncTask class used for animating the score updating.
-	 * Takes in 
+	 * Takes in prev_total, new_total, and set_score, and counts 
+	 * prev_total up to new_total while counting set_score down to 0.
 	 */
 	private class IncScore extends AsyncTask<Integer, Integer, Void> {		
 		
@@ -120,12 +126,11 @@ public class EndSet extends Activity {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
 			
-			publishProgress(-1);
-			
-			while(this.isCancelled() == false && scores[0] <= scores[1]) {	
+			while(this.isCancelled() == false && scores[0] <= scores[1] && scores[2] >= 0) {	
 				
-				publishProgress(scores[0]); //Android calls onProgressUpdate
+				publishProgress(scores[0], scores[2]); //Android calls onProgressUpdate
 				scores[0]++;
+				scores[2]--;
 				
 				try {
 					Thread.sleep(300);
@@ -137,20 +142,12 @@ public class EndSet extends Activity {
 		
 		
 		protected void onProgressUpdate(Integer... current) {
-			
-			if(current[0] == -1) {  //after initial delay - just set text to get ready
-				totalscoretext.setTypeface(null, Typeface.BOLD);
-				totalscoretext.setTextColor(getResources().getColor(R.color.yellow));
-			}
-			else {
-				totalscoretext.setText("Total Score: " + current[0].intValue());
-			}
+			totalscoretext.setText(current[0].toString());
+			setscoretext.setText(current[1].toString());
 		}
 		
 		protected void onPostExecute(Void voids) {
 			
-			totalscoretext.setTypeface(null, Typeface.NORMAL);
-			totalscoretext.setTextColor(getResources().getColor(R.color.white));
 		}
 
 	}
