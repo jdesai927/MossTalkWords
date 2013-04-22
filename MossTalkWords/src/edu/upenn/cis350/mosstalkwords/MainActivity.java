@@ -252,7 +252,7 @@ public class MainActivity extends FragmentActivity {
 				if(_currentSet != null){
 					for (String word: _currentSet){
 						//set url for each image
-						URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+						URL ur = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
 								"/" + word + ".jpg");
 						//create file to be saved in cache directory with word.jpg file naming
 						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
@@ -296,7 +296,7 @@ public class MainActivity extends FragmentActivity {
 			hints = new TreeMap<String, String[]>();
 			boolean b = false;
 			try {
-				URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + _currentPath + 
+				URL ur = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
 				"/" + "hints.txt");
 				//make a reader from the hints file in the bucket
 				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));

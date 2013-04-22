@@ -156,7 +156,7 @@ public class PickSet extends Activity {
 			catToWords = new TreeMap<String, ArrayList<String>>();
 			boolean b = false;
 			try {
-					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/categories.txt");
+					URL ur = new URL("https://s3.amazonaws.com/mosswords/categories.txt");
 					BufferedReader categoryReader = new BufferedReader(new InputStreamReader(ur.openStream()));
 					String lineRead;
 					while ((lineRead = categoryReader.readLine()) != null){
@@ -166,7 +166,7 @@ public class PickSet extends Activity {
 					categoryReader.close();
 					for (String cat: categories){
 						try{
-						URL urwords = new URL("https://s3.amazonaws.com/mosstalkdata/" + cat + "/words.txt");
+						URL urwords = new URL("https://s3.amazonaws.com/mosswords/" + cat + "/words.txt");
 						BufferedReader wordsReader = new BufferedReader(new InputStreamReader(urwords.openStream()));
 						String word;
 						ArrayList<String> wordslist = new ArrayList<String>();
@@ -214,7 +214,7 @@ public class PickSet extends Activity {
 				for (String cat: categories ){
 					
 					if(getSet(cat) != null){
-					URL ur = new URL("https://s3.amazonaws.com/mosstalkdata/" + cat + 
+					URL ur = new URL("https://s3.amazonaws.com/mosswords/" + cat + 
 							"/" + getSet(cat).get(0) + ".jpg");
 					Log.i("info", ur.toString());
 					File file = new File(getApplicationContext().getCacheDir(),  getSet(cat).get(0) +".jpg");
