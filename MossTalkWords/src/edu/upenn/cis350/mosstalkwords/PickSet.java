@@ -12,13 +12,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.http.util.ByteArrayBuffer;
 
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -121,20 +124,33 @@ public class PickSet extends Activity {
 	{
 		int numCompleted = scores.getNumCompleted(category);
 		catToNumWordCompleted.put(category, numCompleted);
-		return catToNumWordCompleted.get(category) + "/" + catToSizeOfCat.get(category);
+		return catToNumWordCompleted.get(category) + "/" + 10;
 	}
 
 	public void start(View view){
 		Intent i = new Intent(this, MainActivity.class);
 		i.putExtra(currentSetPath, category+difficulty);
-		i.putStringArrayListExtra(currentSet, getSet(category+difficulty));
+		ArrayList<String> newSet = getSet(category+difficulty);
+		i.putStringArrayListExtra(currentSet, newSet);
+		AsyncTask<String, Integer, Boolean> downloadFirstFile = new LoadOneFile().execute(category+difficulty+"/",newSet.get(0));
 		//Log.i("info", category+difficulty);
 		//Log.i("info", catToWords.keySet().toString());
 		startActivityForResult(i,1);
 	}
 
 	public ArrayList<String> getSet(String key){
-		return catToWords.get(key);
+		ArrayList<String> fullSet = catToWords.get(key);
+		Collections.shuffle(fullSet);
+		if (fullSet.size() > 10){
+			ArrayList<String> newSet = new ArrayList<String>();
+			for(int i = 0; i<10; i++){
+				newSet.add(fullSet.get(i));
+			}
+			return newSet;
+		}
+		else{
+			return fullSet;
+		}
 	}
 	
 	public class SetSelectedListener implements OnItemClickListener {
@@ -147,7 +163,9 @@ public class PickSet extends Activity {
 			category = category.toLowerCase();
 			difficulty = chosen.difficulty;
 			difficulty = difficulty.toLowerCase();
-			start(view);
+			
+				start(view);
+			
 		}
 	}
 	
@@ -177,6 +195,7 @@ public class PickSet extends Activity {
 							wordslist.add(word);
 							count++;
 						}
+						//Collections.shuffle(wordslist);
 						catToWords.put(cat, wordslist);
 						catToSizeOfCat.put(cat, count);
 						
@@ -202,24 +221,30 @@ public class PickSet extends Activity {
 		@Override
 		protected void onPostExecute(Boolean result) {
 			setListViewInfo();
-			AsyncTask<String, Integer, Boolean> downloadFirstFiles = new LoadOneFile().execute("");
+			
 		}
 
 	}
 	
 	private class LoadOneFile extends AsyncTask<String, Integer, Boolean>{
+		private final ProgressDialog dialog = new ProgressDialog(PickSet.this);
 		@Override
-		protected Boolean doInBackground(String... set) {
+		protected void onPreExecute (){
+			this.dialog.setMessage("Downloading Set! Get Ready!"); 
+			this.dialog.show();
+		}
+		@Override
+		protected void onPostExecute (Boolean result){
+			this.dialog.dismiss();
+		}
+		@Override
+		protected Boolean doInBackground(String... firstImagePath) {
 			boolean b = false;
 			Log.i("info", "LoadOneFile called");
 			try {
-				for (String cat: categories ){
-					
-					if(getSet(cat) != null){
-					URL ur = new URL("https://s3.amazonaws.com/mosswords/" + cat + 
-							"/" + getSet(cat).get(0) + ".jpg");
+					URL ur = new URL("https://s3.amazonaws.com/mosswords/" + firstImagePath[0]+firstImagePath[1] + ".jpg");
 					Log.i("info", ur.toString());
-					File file = new File(getApplicationContext().getCacheDir(),  getSet(cat).get(0) +".jpg");
+					File file = new File(getApplicationContext().getCacheDir(),  firstImagePath[1] +".jpg");
 					Log.i("info", file.getAbsolutePath());	
 					if (file.exists() == false){
 					URLConnection ucon = ur.openConnection();
@@ -239,9 +264,7 @@ public class PickSet extends Activity {
 					else{
 						Log.i("info", file.getAbsolutePath() + "  exists!");
 					}
-					}
-					}
-				
+
 
 			}catch (MalformedURLException e1) {
 				e1.printStackTrace();
