@@ -301,6 +301,7 @@ public class MainActivity extends FragmentActivity {
 				//make a reader from the hints file in the bucket
 				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
 				String lineRead;
+				
 				int linenumber = 0;
 				String word = null;
 				String sentence = null;
@@ -309,6 +310,7 @@ public class MainActivity extends FragmentActivity {
 				//read a line, based on which line number it is, we know what kind of hint it is
 				//all based on text file conventions
 				while ((lineRead = hintReader.readLine()) != null){
+					Log.i("info", lineRead);
 					b = true;
 					switch(linenumber) {
 					case 0: word = lineRead; break;
@@ -318,14 +320,16 @@ public class MainActivity extends FragmentActivity {
 					}
 					linenumber++;
 					//if we've reached an empty line, means we're moving on to next word's hints, reset linenumber
-					if(lineRead.length()==0){ 
+					if(lineRead.length() == 0){
 						linenumber = 0;
 					}
+					
 					//if the line number is 4 (current no. of hints + word itself) , all hints for this word have been
 					//read, so add the map key/value of the word to its array of hints 
 					if(linenumber == 4){
 						if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
 							String [] hts = {sentence, Rhyme1, Rhyme2};
+							Log.i("info", word + " " + Rhyme1 );
 							hints.put(word, hts);
 						}
 					}	
