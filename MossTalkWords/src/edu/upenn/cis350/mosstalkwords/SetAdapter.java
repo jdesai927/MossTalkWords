@@ -48,7 +48,6 @@ import android.widget.TextView;
 	        {
 	            inf = (SetInfo)row.getTag();
 	        }
-	       
 	        Set currset = data.get(position);
 	        inf.category.setText(currset.category);
 	        inf.difficulty.setText(currset.difficulty);
@@ -56,7 +55,6 @@ import android.widget.TextView;
 	        inf.star2Icon.setImageResource(currset.star2);
 	        inf.star3Icon.setImageResource(currset.star3);
 	        row.setBackgroundColor(currset.color);
-	       
 	        return row;
 	    }
 	   

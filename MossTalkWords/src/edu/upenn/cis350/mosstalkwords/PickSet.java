@@ -119,6 +119,8 @@ public class PickSet extends Activity {
 	//method again to get the updated string for PercentageOfCategoryCompleted
 	public String getPercentageOfCategoryCompleted(String category)
 	{
+		int numCompleted = scores.getNumCompleted(category);
+		catToNumWordCompleted.put(category, numCompleted);
 		return catToNumWordCompleted.get(category) + "/" + catToSizeOfCat.get(category);
 	}
 
