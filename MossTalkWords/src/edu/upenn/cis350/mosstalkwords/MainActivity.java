@@ -44,8 +44,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -60,7 +58,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends Activity {
     /** Called when the activity is first created. */
 	public final static String currentSavedScore = "edu.upenn.cis350.mosstalkwords.currentSavedScore";
 	private ImageView _imgView;
@@ -645,8 +643,6 @@ public class MainActivity extends FragmentActivity {
 		}
 		ad = b.create();
 		ad.show();  //show the dialog
-		//DialogFragment df = new DialogFragment();
-		//df.show(getSupportFragmentManager(), "feedback");
 
 		//play the audio feedback
 		if(isSuccess) {
