@@ -12,8 +12,10 @@ public class Set {
 		public int star2;
 		public int star3;
 		public int color; 
+		public boolean locked;
+	
 		
-		public Set(String sc, String cat, String diff){
+		public Set(String sc, String cat, String diff, Boolean unlocked){
 			score = sc;
 			category = cat;
 			difficulty = diff;
@@ -42,6 +44,11 @@ public class Set {
 			}
 			if(difficulty.equals("Hard")){
 				color = 0xFF113E3E;
+			}
+			if(unlocked == false){
+				
+				color = 0xBB888888;
+				locked = true;
 			}
 			
 		}

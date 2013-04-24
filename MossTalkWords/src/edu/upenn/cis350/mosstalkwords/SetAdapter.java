@@ -24,7 +24,17 @@ import android.widget.TextView;
 			this.context = context;
 			this.data = data;
 		}
-		
+		/*@Override
+		public boolean isEnabled (int position){
+			Set currset = data.get(position);
+			if (currset.locked){
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
+		*/
 		@Override
 	    public View getView(int position, View convertView, ViewGroup parent) {
 	        View row = convertView;
@@ -42,6 +52,7 @@ import android.widget.TextView;
 	            inf.star3Icon = (ImageView)row.findViewById(R.id.star3Icon);
 	            inf.category = (TextView)row.findViewById(R.id.txtCategory);
 	            inf.difficulty =(TextView)row.findViewById(R.id.txtDifficulty);
+	            inf.lockedIcon = (ImageView)row.findViewById(R.id.lockedicon);
 	            row.setTag(inf);
 	        }
 	        else
@@ -54,6 +65,12 @@ import android.widget.TextView;
 	        inf.star1Icon.setImageResource(currset.star1);
 	        inf.star2Icon.setImageResource(currset.star2);
 	        inf.star3Icon.setImageResource(currset.star3);
+	        if(currset.locked){
+	        inf.lockedIcon.setImageResource(R.drawable.locked);
+	        }
+	        else{
+	        	inf.lockedIcon.setImageResource(R.drawable.checkmark_2);
+	        }
 	        row.setBackgroundColor(currset.color);
 	        return row;
 	    }
@@ -65,6 +82,7 @@ import android.widget.TextView;
 	        ImageView star3Icon;
 	        TextView category;
 	        TextView difficulty;
+	        ImageView lockedIcon;
 	    }
 	
 	}

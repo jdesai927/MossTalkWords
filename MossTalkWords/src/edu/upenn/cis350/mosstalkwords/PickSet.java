@@ -21,7 +21,9 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -35,6 +37,7 @@ import android.widget.ArrayAdapter;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PickSet extends Activity {
 	public final static String currentSetPath = "edu.upenn.cis350.mosstalkwords.currentSetPath";
@@ -74,7 +77,27 @@ public class PickSet extends Activity {
 	  super.onRestart(); 
 	  updateListViewInfo();
 	}
-		 
+		
+	 private boolean checkUnlocked(String cat, String diff){
+		 String category = cat.replaceAll("\\s","");
+		 category = category.toLowerCase();
+		 if (diff.equals("Easy")){
+			return true; 
+		 }
+		 if(diff.equals("Medium")){
+			 int prevLevelScore = scores.getNumCompleted(category+"easy");
+			 if(prevLevelScore >= 6){
+				 return true;
+			 }
+		 }
+		 if(diff.equals("Hard")){
+			 int prevLevelScore = scores.getNumCompleted(category+"medium");
+			 if(prevLevelScore >= 6){
+				 return true;
+			 }
+		 }
+		 return false;
+	 }
 	 private ArrayList<Set> getSetList(){
 		 String [] cats = getResources().getStringArray(R.array.stimulus_array);
 		 String [] diffs = getResources().getStringArray(R.array.difficulty_array);
@@ -86,7 +109,8 @@ public class PickSet extends Activity {
 				 category = category.toLowerCase();
 				 String score = getPercentageOfCategoryCompleted(category);
 				 Log.i("info", score);
-				 setlist.add(new Set(score, cat, diff));
+				 boolean unlocked = checkUnlocked(cat, diff);
+				 setlist.add(new Set(score, cat, diff, unlocked));
 			 }
 		 }
 		 return setlist;
@@ -158,14 +182,31 @@ public class PickSet extends Activity {
 		@SuppressLint("DefaultLocale")
 		public void onItemClick(AdapterView<?> parent, View view, int pos,long id) {
 			Set chosen = (Set)parent.getItemAtPosition(pos);
+			if(chosen.locked){
+				popLockedAlert();
+			}
+			else{
 			category = chosen.category;
 			category = category.replaceAll("\\s","");
 			category = category.toLowerCase();
 			difficulty = chosen.difficulty;
 			difficulty = difficulty.toLowerCase();
+			start(view);
+			}
 			
-				start(view);
-			
+		}
+
+		private void popLockedAlert() {
+			AlertDialog alertDialog = new AlertDialog.Builder(PickSet.this).create();
+			alertDialog.setTitle("Level Locked!");
+			alertDialog.setMessage("That level is locked. Try an easier level first!");
+			alertDialog.setIcon(R.drawable.padlock_2);
+			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+				}
+			});
+			alertDialog.show();
 		}
 	}
 	
