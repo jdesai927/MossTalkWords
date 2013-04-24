@@ -1,14 +1,10 @@
 package edu.upenn.cis350.mosstalkwords;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,6 +14,7 @@ public class EndSet extends Activity {
 	public String set;
 	public int setscore;
 	public boolean newStreak;
+	public boolean newNumCorrect;
 	
 	TextView totalscoretext;
 	TextView setscoretext;
@@ -68,6 +65,34 @@ public class EndSet extends Activity {
 			//highlight the fact that they got a new streak 
 			streaktext.setTextColor(Color.parseColor("#288C8C"));
 			streaktext.setTypeface(null, Typeface.BOLD);
+		}
+		
+		//num correct and star count
+		newNumCorrect = getIntent().getBooleanExtra("newNumCorrect",false);
+		int numCorrect = getIntent().getIntExtra("numCorrect", 0);
+		
+		TextView correct = (TextView) findViewById(R.id.endset_correct_count);
+		correct.setText(Integer.toString(numCorrect) + "/10 Correct");
+		
+		if(newNumCorrect) {
+			//highlight the fact that they got a new number of correct pics
+			correct.setTextColor(Color.parseColor("#288C8C"));
+			correct.setTypeface(null, Typeface.BOLD);
+		}
+		
+		if(numCorrect >= 6) {
+			ImageView star1 = (ImageView) findViewById(R.id.endset_star1);
+			star1.setImageResource(R.drawable.star);
+		}
+		
+		if(numCorrect >= 8) {
+			ImageView star2 = (ImageView) findViewById(R.id.endset_star2);
+			star2.setImageResource(R.drawable.star);
+		}
+		
+		if(numCorrect == 10) {
+			ImageView star3 = (ImageView) findViewById(R.id.endset_star3);
+			star3.setImageResource(R.drawable.star);
 		}
 		
 		

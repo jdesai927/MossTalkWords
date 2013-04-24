@@ -515,10 +515,12 @@ public class MainActivity extends Activity {
     		
   		    finish();
   		    
+  		    boolean newNumCorrect = false;
     		int prevNumOfCorrectAnswers = _scores.getNumCompleted(_currentPath);
     		if(_numCorrect > prevNumOfCorrectAnswers)
     		{
     			_scores.setNumCompleted(_currentPath, _numCorrect);
+    			newNumCorrect = true;
     		}
 
     		_scores.setTotalScore(_totalScore);
@@ -527,6 +529,8 @@ public class MainActivity extends Activity {
     		i.putExtra("set", _currentPath);
     		i.putExtra("setscore", _setScore);
     		i.putExtra("newstreak", newStreak);
+    		i.putExtra("newNumCorrect", newNumCorrect);
+    		i.putExtra("numCorrect", _numCorrect);
     		startActivityForResult(i,2);
     	}
     	return end;
