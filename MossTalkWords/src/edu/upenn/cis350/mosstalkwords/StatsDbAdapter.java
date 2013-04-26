@@ -105,22 +105,28 @@ public class StatsDbAdapter extends SQLiteOpenHelper {
     	StringBuffer email_body = new StringBuffer();
         if(cursor != null)
         {
-        	email_body.append("WORD\tUSER GUESS\tNUM OF TRIES\tNUM HINTS USED\tRHYME USED\tPHRASE USED\tWORD USED\tSUCCEEDED\n");
+//        	email_body.append("WORD\tUSER GUESS\tNUM OF TRIES\tNUM HINTS USED\tRHYME USED\tPHRASE USED\tWORD USED\tSUCCEEDED\n");
         	while(cursor.moveToNext())
         	{
         		String word = cursor.getString(cursor.getColumnIndex(KEY_WORD));
         		String guess = cursor.getString(cursor.getColumnIndex(KEY_GUESS));
-        	    int number_tries = cursor.getInt(cursor.getColumnIndex(KEY_NUM_TRIES));
+        	    int num_tries = cursor.getInt(cursor.getColumnIndex(KEY_NUM_TRIES));
         		int num_hints = cursor.getInt(cursor.getColumnIndex(KEY_NUM_HINTS));
-        		boolean rhyme_used = (cursor.getInt(cursor.getColumnIndex(KEY_HINT_RHYME)) == 1) ? true : false;
-        		boolean phrase_used = (cursor.getInt(cursor.getColumnIndex(KEY_HINT_PHRASE)) == 1) ? true : false;
-        		boolean word_used = (cursor.getInt(cursor.getColumnIndex(KEY_HINT_WORD)) == 1) ? true : false;
-        	    boolean success = (cursor.getInt(cursor.getColumnIndex(KEY_SUCCESS)) == 1) ? true : false;
-        				
-        		email_body.append(word + "\t" + guess + "\t" + number_tries + "\t" + num_hints + "\t\t" + 
-        						rhyme_used + "\t" + phrase_used +"\t" + word_used + "\t" + success + "\n");
-        		Log.d("statsdbadapter", word + "\t" + guess + "\t" + number_tries + "\t\t" + num_hints + "\t\t" + 
-								rhyme_used + "\t" + phrase_used +"\t" + word_used + "\t" + success + "\n");
+        		String rhyme_used = (cursor.getInt(cursor.getColumnIndex(KEY_HINT_RHYME)) == 1) ? "yes" : "no";
+        		String phrase_used = (cursor.getInt(cursor.getColumnIndex(KEY_HINT_PHRASE)) == 1) ? "yes" : "no";
+        		String word_used = (cursor.getInt(cursor.getColumnIndex(KEY_HINT_WORD)) == 1) ? "yes" : "no";
+        	    String success = (cursor.getInt(cursor.getColumnIndex(KEY_SUCCESS)) == 1) ? "yes" : "no";
+        		
+        	    email_body.append(String.format("Word: %s\n", word));
+        	    email_body.append(String.format("User guessed: %s\n", guess));
+        	    email_body.append(String.format("Number of tries: %s\n", num_tries));
+        	    email_body.append(String.format("Number of hints used: %s\n", num_hints));
+        	    email_body.append(String.format("Rhyme hint used: %s\n", rhyme_used));
+        	    email_body.append(String.format("Phrase hint used: %s\n", phrase_used));
+        	    email_body.append(String.format("Word hint used: %s\n", word_used));
+        	    email_body.append(String.format("User succeded: %s\n", phrase_used));
+        	    email_body.append("\n\n");
+        		Log.d("statsdbadapter", email_body.toString());
         	}
         	String result = email_body.toString();
         	return result;
@@ -129,38 +135,5 @@ public class StatsDbAdapter extends SQLiteOpenHelper {
         return new String();
  
     }
-    
-//    public void addScore(String name, int score)
-//    {
-//    	ContentValues values = new ContentValues();
-//    	values.put(KEY_NAME, name);
-//    	values.put(KEY_SCORE, score);
-//    	
-//    	db.insert(TABLE_SCORES, null, values);
-//    }
-//    
-//    public int getScore(String name)
-//    {
-//    	Cursor cursor = db.query(TABLE_SCORES, new String[] {KEY_NAME, KEY_SCORE}, KEY_NAME + "= '" + name + "'", null, null, null, null);
-//    	if (cursor != null)
-//    	{
-//    		if(cursor.moveToFirst())
-//    		{
-//	    		int score = cursor.getInt(cursor.getColumnIndex(KEY_SCORE));
-//	    		cursor.close();
-//	    		return score;
-//    		}
-//    	}
-//    	return -1;
-//    }
-//    
-//    public void updateScore(String name, int score)
-//    {
-//    	ContentValues values = new ContentValues();
-//    	values.put(KEY_NAME, name);
-//    	values.put(KEY_SCORE, score);
-//    	
-//    	db.update(TABLE_SCORES, values, KEY_NAME + "= '" + name + "'", null);
-//    }
     
 }
