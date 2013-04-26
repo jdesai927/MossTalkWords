@@ -17,10 +17,10 @@ public class ScoresDbAdapter extends SQLiteOpenHelper {
     // Database Name
     private static final String DATABASE_NAME = "gamescores";
  
-    // Contacts table name
+    // Scores table name
     private static final String TABLE_SCORES = "scores";
  
-    // Contacts Table Columns names
+    // Scores Table Columns names
     private static final String KEY_NAME = "name";
     private static final String KEY_SCORE = "score";
     

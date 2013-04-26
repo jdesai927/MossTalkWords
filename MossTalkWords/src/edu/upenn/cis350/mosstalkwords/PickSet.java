@@ -30,10 +30,12 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -48,6 +50,10 @@ public class PickSet extends Activity {
 	private String category;
 	private Scores scores;
 	private TextView highscore;
+	
+	private Button _reportButton;
+	
+	private StatsDbAdapter statsDb;
 	
 	private AsyncTask<String, Integer, Boolean> downloadCatsWords;
 	private TreeMap<String, ArrayList<String>> catToWords;
@@ -64,8 +70,36 @@ public class PickSet extends Activity {
 		category = "livingthings";
 		difficulty = "easy";
 		downloadCatsWords = new LoadCategoriesWords().execute("");
+		
+		statsDb = new StatsDbAdapter(this.getApplicationContext());
+		statsDb.open();
+		
+		_reportButton = (Button) findViewById(R.id.reportButton);
+		
+        _reportButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Log.d("error", "EMAIL ON CLICK");
+				String email_body = statsDb.getStats();
+				
+				Intent email = new Intent(Intent.ACTION_SEND);
+				email.putExtra(Intent.EXTRA_EMAIL, new String[]{"vishwa@seas.upenn.edu"});		  
+				email.putExtra(Intent.EXTRA_SUBJECT, "PicSpeak Report");
+				email.putExtra(Intent.EXTRA_TEXT, email_body);
+				email.setType("message/rfc822");
+				startActivity(Intent.createChooser(email, "Choose an Email client :"));
+			}
+        	
+        });
 	}
 	
+	@Override
+	protected void onDestroy() {
+		statsDb.close();
+		super.onDestroy();
+	}
+
 	@Override 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {     
 	  super.onActivityResult(requestCode, resultCode, data); 

@@ -76,13 +76,18 @@ public class MainActivity extends Activity {
 
 	private ProgressBar progressBarSet;
 
-
+	public StatsDbAdapter statsDb;
+	
 	private boolean _listenerIsReady = false;
 	private TextToSpeech soundGenerator;
 	private TreeMap<String, String[]> hints; 
 	public int _rhymeUsed; 
 	public int _totalScore = 0;
-
+	
+	private int hintWordUsed = 0;
+	private int hintPhraseUsed = 0;
+	private int hintRhymeUsed = 0;
+	private String userGuess = new String();
 
 	public Scores _scores;
 	public int _setScore = 0;
@@ -114,6 +119,9 @@ public class MainActivity extends Activity {
         _totalScore = _scores.getTotalScore();
         _setScore = 0;
         _streak = 0;
+        
+        statsDb = new StatsDbAdapter(this.getApplicationContext());
+        statsDb.open();
         
         //set score view
         st = (TextView) findViewById(R.id.score);
@@ -155,13 +163,14 @@ public class MainActivity extends Activity {
         _micButton = (Button) findViewById(R.id.micbutton);
         _skipButton = (Button) findViewById(R.id.skipbutton);
         _helpButton = (Button) findViewById(R.id.helpbutton);
-        
       
         _mediaPlayer = new MediaPlayer();
         _mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         
         _hintPhraseButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				
+				hintPhraseUsed = 1;
 				playSoundText("phrase");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;	
@@ -170,6 +179,8 @@ public class MainActivity extends Activity {
         
         _hintRhymeButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				
+				hintRhymeUsed = 1;
 				playSoundText("rhyme");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;
@@ -178,6 +189,8 @@ public class MainActivity extends Activity {
         
         _hintPronounceButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				
+				hintWordUsed = 1;
 				playSoundText("word");
 				if(_numHintsUsed < 3)
 					_numHintsUsed++;
@@ -545,6 +558,7 @@ public class MainActivity extends Activity {
                 ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                 String correctAnswer = _currentSet.get(_currentIndex);
                 
+                userGuess = result.get(0);
                 for(String str: result)
                 {
                 	if(str.equals(correctAnswer) || str.contains(correctAnswer))
@@ -597,6 +611,11 @@ public class MainActivity extends Activity {
 		        	
 		        	animateScore();
 		    		
+		        	statsDb.addStat(_currentSet.get(_currentIndex), _numTries, _numHintsUsed, hintWordUsed, hintPhraseUsed, hintRhymeUsed, userGuess, 1);
+		        	hintWordUsed = 0;
+		        	hintPhraseUsed = 0;
+		        	hintRhymeUsed = 0;
+		        	userGuess = new String();
 		        	nextImage();
 				}
 			});
@@ -619,6 +638,12 @@ public class MainActivity extends Activity {
 						newStreak = true;
 					}
 
+		        	statsDb.addStat(_currentSet.get(_currentIndex), _numTries, _numHintsUsed, hintWordUsed, hintPhraseUsed, hintRhymeUsed, userGuess, 0);
+		        	hintWordUsed = 0;
+		        	hintPhraseUsed = 0;
+		        	hintRhymeUsed = 0;
+		        	userGuess = new String();
+		        	
 					_streak = 0;
 					nextImage();
 				}
@@ -640,7 +665,11 @@ public class MainActivity extends Activity {
 					if(_scores.getHighestStreak() < _streak) {
 						_scores.setHighestStreak(_streak);
 						newStreak = true;
-					}	
+					}
+					
+		        	statsDb.addStat(_currentSet.get(_currentIndex), _numTries, _numHintsUsed, hintWordUsed, hintPhraseUsed, hintRhymeUsed, userGuess, 0); 
+		        	userGuess = new String();
+		        	
 					_streak = 0;
 				}
 			});	
@@ -729,7 +758,8 @@ public class MainActivity extends Activity {
 			  soundGenerator.shutdown(); 
 			  soundGenerator = null;
 		  }
-
+		  
+		  statsDb.close();
 		  _scores.closeDb();
 	      super.onDestroy();
 
