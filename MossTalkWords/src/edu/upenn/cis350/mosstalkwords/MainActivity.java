@@ -48,6 +48,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
@@ -99,6 +100,7 @@ public class MainActivity extends Activity {
 	private ArrayList<String> _currentSet;
 
 	public AlertDialog ad;
+	private TextView dialogsetscoretext;
 	public int _numCorrect = 0;
 
 	private AsyncTask<String, Integer, Boolean> downloadHints;
@@ -590,13 +592,31 @@ public class MainActivity extends Activity {
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 
 		b.setCancelable(false);
+		
+		//get parts of the dialog view for later assignment
+		View dialog_view = this.getLayoutInflater().inflate(R.layout.feedback_dialog, null);
+		
+		ImageView icon = (ImageView) dialog_view.findViewById(R.id.dialog_icon);
+		TextView resulttext = (TextView) dialog_view.findViewById(R.id.dialog_result);
+		TextView feedbacktext = (TextView) dialog_view.findViewById(R.id.dialog_feedback);
+		TextView pointstext = (TextView) dialog_view.findViewById(R.id.dialog_points);
+		TextView hintstext = (TextView) dialog_view.findViewById(R.id.dialog_hints);
+		dialogsetscoretext = (TextView) dialog_view.findViewById(R.id.dialog_setscore);
 
 		if(isSuccess) {  //only give them continue button if they got it right
 			_numCorrect++;
-			b.setTitle("Correct!");
-			b.setIcon(R.drawable.checkmark);
-			b.setMessage("You said: " + word_said);
-
+			
+			resulttext.setText("Correct!");
+			icon.setImageResource(R.drawable.checkmark);
+			feedbacktext.setText("You said: " + word_said);
+			pointstext.setText("+ 3");
+			hintstext.setText("- " + Integer.toString(_numHintsUsed));
+			dialogsetscoretext.setText(Integer.toString(_setScore));
+			dialogsetscoretext.setTextColor(getResources().getColor(R.color.yellow));
+			
+			//call the asynctask to increment the previous total to the new total
+			new IncScore().execute(_setScore, _setScore + 3 - _numHintsUsed, 3 - _numHintsUsed);
+			
 			_feedbackResult="continue";
 
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
@@ -609,7 +629,8 @@ public class MainActivity extends Activity {
 
 		        	st.setText(Integer.toString(_totalScore));
 		        	
-		        	animateScore();
+		        	if(_numHintsUsed < 3)
+		        		animateScore();
 		    		
 		        	statsDb.addStat(_currentSet.get(_currentIndex), _numTries, _numHintsUsed, hintWordUsed, hintPhraseUsed, hintRhymeUsed, userGuess, 1);
 		        	hintWordUsed = 0;
@@ -622,10 +643,15 @@ public class MainActivity extends Activity {
 
 		}
 		else if(isSuccess == false && _numTries >= 2) {  //got it wrong, but time to move on
-			b.setTitle("Try the next picture!");
-			b.setIcon(R.drawable.wrong);
-			b.setMessage("The correct answer was: " + _currentSet.get(_currentIndex));
-
+			
+			resulttext.setText("Try the next picture!");
+			resulttext.setTextSize(30);
+			icon.setImageResource(R.drawable.wrong);
+			feedbacktext.setText("The correct answer was: " + _currentSet.get(_currentIndex));
+			pointstext.setVisibility(View.INVISIBLE);
+			hintstext.setVisibility(View.INVISIBLE);
+			dialogsetscoretext.setText(Integer.toString(_setScore));
+			
 			_feedbackResult="continue";
 
 			b.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
@@ -651,10 +677,14 @@ public class MainActivity extends Activity {
 
 		}
 		else {
-			b.setTitle("Not quite!");
-			b.setIcon(R.drawable.wrong);
-			b.setMessage("You said: " + word_said);
-
+			
+			resulttext.setText("Not quite!");
+			icon.setImageResource(R.drawable.wrong);
+			feedbacktext.setText("You said: " + word_said);
+			pointstext.setVisibility(View.INVISIBLE);
+			hintstext.setVisibility(View.INVISIBLE);
+			dialogsetscoretext.setText(Integer.toString(_setScore));
+			
 			_feedbackResult="again";
 
 			b.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
@@ -674,8 +704,11 @@ public class MainActivity extends Activity {
 				}
 			});	
 		}
+		
+		b.setView(dialog_view);
 		ad = b.create();
 		ad.show();  //show the dialog
+		
 
 		//play the audio feedback
 		if(isSuccess) {
@@ -698,7 +731,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void animateScore() {
-    	st.setTextColor(Color.RED);
+    	st.setTextColor(getResources().getColor(R.color.green));
     	st.setTypeface(null, Typeface.BOLD);
     	st.setTextSize(40);
     	
@@ -715,9 +748,9 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void run() {
-			st.setTextColor(Color.WHITE);
+			st.setTextColor(getResources().getColor(R.color.yellow));
 			st.setTypeface(null, Typeface.NORMAL);
-			st.setTextSize(35);
+			st.setTextSize(40);
 		}
 		
 	};
@@ -819,6 +852,45 @@ public class MainActivity extends Activity {
 
 		public AsyncTask.Status getDownloadFilesStatus() {
 			return downloadFiles.getStatus();
+		}
+		
+		
+		/**
+		 * AsyncTask class used for animating the score updating.
+		 * Takes in prev_total, new_total and counts 
+		 * prev_total up to new_total.
+		 */
+		private class IncScore extends AsyncTask<Integer, Integer, Void> {		
+			
+			protected Void doInBackground(Integer... scores) {
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {}
+				
+				while(this.isCancelled() == false && scores[0] <= scores[1]) {	
+					
+					publishProgress(scores[0]); //Android calls onProgressUpdate
+					scores[0]++;
+					scores[2]--;
+					
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {}
+				}
+				
+				return null;
+			}
+			
+			
+			protected void onProgressUpdate(Integer... current) {
+				dialogsetscoretext.setText(current[0].toString());
+			}
+			
+			protected void onPostExecute(Void voids) {
+				
+			}
+
 		}
 
 }

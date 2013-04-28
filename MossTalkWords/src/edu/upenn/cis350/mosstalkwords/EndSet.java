@@ -159,7 +159,7 @@ public class EndSet extends Activity {
 				scores[2]--;
 				
 				try {
-					Thread.sleep(300);
+					Thread.sleep(200);
 				} catch (InterruptedException e) {}
 			}
 			
