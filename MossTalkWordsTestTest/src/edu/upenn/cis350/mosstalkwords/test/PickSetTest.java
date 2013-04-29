@@ -19,6 +19,8 @@ public class PickSetTest extends ActivityInstrumentationTestCase2<PickSet> {
 		act = (PickSet) this.getActivity();
 	}
 	
+	//WARNING:  THESE TESTS REQUIRE DATA/WIFI TURNED ON TO TEST DOWNLOADING
+	
 	/**
 	 * test if categories and words are downloaded successfully
 	 * @throws InterruptedException
@@ -38,7 +40,8 @@ public class PickSetTest extends ActivityInstrumentationTestCase2<PickSet> {
 	
 	
 	/**
-	 * Test whether we can get a set, and that the set is correct
+	 * Test whether we can get a set, and that the set is the 
+	 * correct size (the set is random, so cant check if words are right)
 	 * @throws InterruptedException
 	 */
 	public void testGetSet() throws InterruptedException {
@@ -52,16 +55,7 @@ public class PickSetTest extends ActivityInstrumentationTestCase2<PickSet> {
 		
 		assertNotNull(res);
 		
-		assertTrue(res.contains("parachute"));
-		assertTrue(res.contains("freezer"));
-		assertTrue(res.contains("marker"));
-		assertTrue(res.contains("icicle"));
-		assertTrue(res.contains("boomerang"));
-		assertTrue(res.contains("calculator"));
-		assertTrue(res.contains("stadium"));
-		assertTrue(res.contains("motorcycle"));
-		assertTrue(res.contains("toothbrush"));
-		assertTrue(res.contains("spatula"));
+		assertTrue(res.size() == 10);
 		
 	}
 	

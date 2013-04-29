@@ -16,9 +16,16 @@ public class EndSet extends Activity {
 	public boolean newStreak;
 	public boolean newNumCorrect;
 	
-	TextView totalscoretext;
-	TextView setscoretext;
-
+	//public for testing purposes
+	public TextView totalscoretext;
+	public TextView setscoretext;
+	public TextView highscoretext;
+	public ImageView highscorestamp;
+	public TextView correct;
+	public ImageView star1;
+	public ImageView star2;
+	public ImageView star3;
+	
 	
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -37,7 +44,7 @@ public class EndSet extends Activity {
 		Scores scores = new Scores(getApplicationContext());
 		
 		//the high score
-		TextView highscoretext = (TextView) findViewById(R.id.endset_highscore);
+		highscoretext = (TextView) findViewById(R.id.endset_highscore);
 		highscoretext.setText("High Score: " + scores.getHighScore(set));
 		if(setscore == scores.getHighScore(set) && setscore > 0) {
 			//highlight the fact that they got a new high score
@@ -45,7 +52,7 @@ public class EndSet extends Activity {
 			highscoretext.setTypeface(null, Typeface.BOLD);
 			
 			//display the high score stamp
-			ImageView highscorestamp = (ImageView) findViewById(R.id.endset_stamp);
+			highscorestamp = (ImageView) findViewById(R.id.endset_stamp);
 			highscorestamp.setImageResource(R.drawable.high_score_stamp);
 		}
 		
@@ -71,7 +78,7 @@ public class EndSet extends Activity {
 		newNumCorrect = getIntent().getBooleanExtra("newNumCorrect",false);
 		int numCorrect = getIntent().getIntExtra("numCorrect", 0);
 		
-		TextView correct = (TextView) findViewById(R.id.endset_correct_count);
+		correct = (TextView) findViewById(R.id.endset_correct_count);
 		correct.setText(Integer.toString(numCorrect) + "/10 Correct");
 		
 		if(newNumCorrect) {
@@ -80,18 +87,19 @@ public class EndSet extends Activity {
 			correct.setTypeface(null, Typeface.BOLD);
 		}
 		
+		star1 = (ImageView) findViewById(R.id.endset_star1);
+		star2 = (ImageView) findViewById(R.id.endset_star2);
+		star3 = (ImageView) findViewById(R.id.endset_star3);
+		
 		if(numCorrect >= 6) {
-			ImageView star1 = (ImageView) findViewById(R.id.endset_star1);
 			star1.setImageResource(R.drawable.star);
 		}
 		
 		if(numCorrect >= 8) {
-			ImageView star2 = (ImageView) findViewById(R.id.endset_star2);
 			star2.setImageResource(R.drawable.star);
 		}
 		
 		if(numCorrect == 10) {
-			ImageView star3 = (ImageView) findViewById(R.id.endset_star3);
 			star3.setImageResource(R.drawable.star);
 		}
 		
