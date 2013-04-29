@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
         
         //set score view
         st = (TextView) findViewById(R.id.score);
-    	st.setText(Integer.toString(_totalScore));
+    	st.setText(Integer.toString(_setScore));
     	
     	progressBarSet = (ProgressBar)findViewById(R.id.progressBarGame);
     	Resources res = getResources();
@@ -627,7 +627,7 @@ public class MainActivity extends Activity {
 					_streak++;
 		        	TextView st = (TextView) findViewById(R.id.score);
 
-		        	st.setText(Integer.toString(_totalScore));
+		        	st.setText(Integer.toString(_setScore));
 		        	
 		        	if(_numHintsUsed < 3)
 		        		animateScore();
