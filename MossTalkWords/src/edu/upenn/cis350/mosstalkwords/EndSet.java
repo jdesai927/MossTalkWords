@@ -173,7 +173,7 @@ public class EndSet extends Activity {
 		}
 		
 		protected void onPostExecute(Void voids) {
-			
+			setscoretext.setVisibility(View.INVISIBLE);
 		}
 
 	}
