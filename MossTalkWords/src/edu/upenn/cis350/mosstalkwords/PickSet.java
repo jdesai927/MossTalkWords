@@ -255,7 +255,7 @@ public class PickSet extends Activity {
 			catToWords = new TreeMap<String, ArrayList<String>>();
 			boolean b = false;
 			try {
-					URL ur = new URL("https://s3.amazonaws.com/mosswords/categories.txt");
+					URL ur = new URL(MainActivity.bucketSite + "categories.txt");
 					BufferedReader categoryReader = new BufferedReader(new InputStreamReader(ur.openStream()));
 					String lineRead;
 					while ((lineRead = categoryReader.readLine()) != null){
@@ -265,7 +265,7 @@ public class PickSet extends Activity {
 					categoryReader.close();
 					for (String cat: categories){
 						try{
-						URL urwords = new URL("https://s3.amazonaws.com/mosswords/" + cat + "/words.txt");
+						URL urwords = new URL(MainActivity.bucketSite + cat + "/words.txt");
 						BufferedReader wordsReader = new BufferedReader(new InputStreamReader(urwords.openStream()));
 						String word;
 						ArrayList<String> wordslist = new ArrayList<String>();
@@ -327,7 +327,7 @@ public class PickSet extends Activity {
 			boolean b = false;
 			Log.i("info", "LoadOneFile called");
 			try {
-					URL ur = new URL("https://s3.amazonaws.com/mosswords/" + firstImagePath[0]+firstImagePath[1] + ".jpg");
+					URL ur = new URL(MainActivity.bucketSite + firstImagePath[0]+firstImagePath[1] + ".jpg");
 					Log.i("info", ur.toString());
 					File file = new File(getApplicationContext().getCacheDir(),  firstImagePath[1] +".jpg");
 					Log.i("info", file.getAbsolutePath());	

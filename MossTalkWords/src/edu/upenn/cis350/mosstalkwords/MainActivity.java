@@ -63,6 +63,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     /** Called when the activity is first created. */
 	public final static String currentSavedScore = "edu.upenn.cis350.mosstalkwords.currentSavedScore";
+	public final static String bucketSite ="https://s3.amazonaws.com/mosswords/"; 
 	private ImageView _imgView;
 	private String _currentPath;
 	private int _currentIndex;
@@ -265,7 +266,7 @@ public class MainActivity extends Activity {
 				if(_currentSet != null){
 					for (String word: _currentSet){
 						//set url for each image
-						URL url = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
+						URL url = new URL(bucketSite + _currentPath + 
 								"/" + word + ".jpg");
 						//create file to be saved in cache directory with word.jpg file naming
 						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
@@ -350,7 +351,7 @@ public class MainActivity extends Activity {
 			//Use a map of each word to an array of it's hints
 			hints = new TreeMap<String, String[]>();
 			try {
-				URL ur = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
+				URL ur = new URL(bucketSite + _currentPath + 
 				"/" + "hints.txt");
 				//make a reader from the hints file in the bucket
 				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
@@ -408,7 +409,7 @@ public class MainActivity extends Activity {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		if(!(new File(buildCachePath(".jpg"))).exists()){
 			Log.i("info","image does not exist");
-			AsyncTask<URL, Void, Bitmap> loadImage = new MissingImageTask().execute(new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
+			AsyncTask<URL, Void, Bitmap> loadImage = new MissingImageTask().execute(new URL(bucketSite + _currentPath + 
 					"/" + _currentSet.get(_currentIndex) + ".jpg"));
 			}
 		try{
