@@ -64,7 +64,7 @@ public class PickSet extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		downloadFiles = new LoadFilesTask().execute("");
+		//downloadFiles = new LoadFilesTask().execute("");
 		setContentView(R.layout.activity_pick);	
 		scores = new Scores(getApplicationContext());
 		//initialize category and difficulty
@@ -246,53 +246,7 @@ public class PickSet extends Activity {
 		}
 	}
 	
-	/**
-	 *Async Task to load the images from the bucket and save them to the cache directory
-	 */
-	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
-		@Override
-		protected Boolean doInBackground(String... set) {
-			boolean b = false;
-			try {
-				//make sure currentSet has been defined already
-				if(categories != null){
-					for(String category: categories){
-					for (String word: catToWords.get(category)){
-						//set url for each image
-						URL ur = new URL("https://s3.amazonaws.com/mosswords/" + category + 
-								"/" + word + ".jpg");
-						//create file to be saved in cache directory with word.jpg file naming
-						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
-						//if this file doesn't exist already (not already downloaded)
-						if (file.exists() == false){
-							//Write the file to the cache dir
-							BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
-							ByteArrayBuffer baf = new ByteArrayBuffer(50);
-							int current = 0;
-							while ((current = bis.read()) != -1){
-								baf.append((byte) current);
-							}
-							FileOutputStream fos = new FileOutputStream(file);
-							fos.write(baf.toByteArray());
-							fos.close();
-							b = true;
-							Log.i("info", file.getAbsolutePath() + "saved it!");
-						}
-						else{
-							Log.i("info", file.getAbsolutePath() + "  exists!");
-						}
-					}
-				} 
-			}
-			}
-			catch (MalformedURLException e1) {
-				Log.i("info", "MalformedURL exception!");
-			} catch (IOException e) {
-				Log.i("info", "IO exception!");
-			}
-		 return b;
-		}
-	}
+	
 	
 	private class LoadCategoriesWords extends AsyncTask<String, Integer, Boolean>{
 		@Override
@@ -391,7 +345,6 @@ public class PickSet extends Activity {
 					fos.close();
 					b = true;
 				}
-					
 					else{
 						Log.i("info", file.getAbsolutePath() + "  exists!");
 					}

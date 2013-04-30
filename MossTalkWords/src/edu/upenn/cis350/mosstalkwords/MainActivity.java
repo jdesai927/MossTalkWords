@@ -104,8 +104,8 @@ public class MainActivity extends Activity {
 	private TextView dialogsetscoretext;
 	public int _numCorrect = 0;
 
-	private AsyncTask<String, Integer, Boolean> downloadHints;
-	private AsyncTask<String, Integer, Boolean> downloadFiles;
+	private AsyncTask<String, Integer, Void> downloadHints;
+	private AsyncTask<String, Integer, Void> downloadFiles;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -257,32 +257,30 @@ public class MainActivity extends Activity {
 	/**
 	 *Async Task to load the images from the bucket and save them to the cache directory
 	 */
-	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
+	private class LoadFilesTask extends AsyncTask<String, Integer, Void>{
 		@Override
-		protected Boolean doInBackground(String... set) {
-			boolean b = false;
+		protected Void doInBackground(String... set) {
 			try {
 				//make sure currentSet has been defined already
 				if(_currentSet != null){
 					for (String word: _currentSet){
 						//set url for each image
-						URL ur = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
+						URL url = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
 								"/" + word + ".jpg");
 						//create file to be saved in cache directory with word.jpg file naming
 						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
 						//if this file doesn't exist already (not already downloaded)
 						if (file.exists() == false){
 							//Write the file to the cache dir
-							BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
+							BufferedInputStream imageStream = new BufferedInputStream(url.openConnection().getInputStream());
 							ByteArrayBuffer baf = new ByteArrayBuffer(50);
 							int current = 0;
-							while ((current = bis.read()) != -1){
+							while ((current = imageStream.read()) != -1){
 								baf.append((byte) current);
 							}
-							FileOutputStream fos = new FileOutputStream(file);
-							fos.write(baf.toByteArray());
-							fos.close();
-							b = true;
+							FileOutputStream outputStream = new FileOutputStream(file);
+							outputStream.write(baf.toByteArray());
+							outputStream.close();
 							Log.i("info", file.getAbsolutePath() + "saved it!");
 						}
 						else{
@@ -296,69 +294,106 @@ public class MainActivity extends Activity {
 			} catch (IOException e) {
 				Log.i("info", "IO exception!");
 			}
-		 return b;
+			return null;
 		}
 	}
+
+	private class MissingImageTask extends AsyncTask<URL,Void, Bitmap>{
+		ProgressDialog dialog;
+		@Override
+	    protected void onPreExecute() {
+	        dialog = new ProgressDialog(MainActivity.this);
+	        dialog.setMessage("Loading Image!");
+	        dialog.show();
+	    }
+		
+		@Override
+		protected Bitmap doInBackground(URL... urls) {
+			Bitmap missingBitmap = null;
+			try{
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inJustDecodeBounds = true;
+				Bitmap first = BitmapFactory.decodeStream(urls[0].openConnection().getInputStream(), null, options);
+				int width = options.outWidth;
+				int height = options.outHeight;
+				int divider = 1;
+				 //Set a divider value to divide the image size by to make it fit within the desired bounds
+				 if (width > 2000 || height > 2000){
+					 divider = Double.valueOf(Math.max(Math.ceil(width/2000.0),Math.ceil(height/2000.0))).intValue();
+				 }
+				 //Now with the correct sample size, actually load the bitmap
+				 options.inJustDecodeBounds = false;
+				 options.inSampleSize = divider;
+				 missingBitmap = BitmapFactory.decodeStream(urls[0].openConnection().getInputStream(), null, options);
+			}
+			catch (IOException e){
+				e.printStackTrace();
+			}
+			return missingBitmap;
+		}
+		
+		@Override
+		protected void onPostExecute(Bitmap result){
+			dialog.dismiss();
+			_imgView.setImageBitmap(result);
+		}	
+	}
+	
 
 	/**
 	 * Async task to load hints from the bucket for the current set and store them in a map
 	 */
-	private class LoadHintsTask extends AsyncTask<String, Integer, Boolean>{
+	private class LoadHintsTask extends AsyncTask<String, Integer, Void>{
 
 		@Override
-		protected Boolean doInBackground(String... set) {
+		protected Void doInBackground(String... set) {
 			//Use a map of each word to an array of it's hints
 			hints = new TreeMap<String, String[]>();
-			boolean b = false;
 			try {
 				URL ur = new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
 				"/" + "hints.txt");
 				//make a reader from the hints file in the bucket
 				BufferedReader hintReader = new BufferedReader(new InputStreamReader(ur.openStream()));
 				String lineRead;
-				
 				int linenumber = 0;
-				String word = null;
-				String sentence = null;
-				String Rhyme1 = null;
-				String Rhyme2 = null;
+				String word = "";
+				String sentence = "";
+				String Rhyme1 = "";
+				String Rhyme2 = "";
 				//read a line, based on which line number it is, we know what kind of hint it is
 				//all based on text file conventions
 				while ((lineRead = hintReader.readLine()) != null){
 					Log.i("info", lineRead);
-					b = true;
 					switch(linenumber) {
 					case 0: word = lineRead; break;
 					case 1: sentence = lineRead; break;
 					case 2: Rhyme1 = lineRead; break;
-					case 3: Rhyme2 = lineRead;  break;
+					case 3: 
+						Rhyme2 = lineRead; 
+						if(!word.equals("") && !sentence.equals("") && !Rhyme1.equals("") && !Rhyme2.equals("")){
+							String [] hts = {sentence, Rhyme1, Rhyme2};
+							Log.i("info", word + " " + Rhyme1 );
+							hints.put(word, hts);
+						}
+						else{
+							Log.i("info", "Hints loading issue!");
+						}
+						break;
 					}
 					linenumber++;
 					//if we've reached an empty line, means we're moving on to next word's hints, reset linenumber
 					if(lineRead.length() == 0){
 						linenumber = 0;
 					}
-					
-					//if the line number is 4 (current no. of hints + word itself) , all hints for this word have been
-					//read, so add the map key/value of the word to its array of hints 
-					if(linenumber == 4){
-						if(word != null && sentence != null && Rhyme1 != null && Rhyme2 != null){
-							String [] hts = {sentence, Rhyme1, Rhyme2};
-							Log.i("info", word + " " + Rhyme1 );
-							hints.put(word, hts);
-						}
-					}	
-
 				} 
 			}catch (MalformedURLException e1) {
 				e1.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		 return b;
+			return null;
 		}
 	}
-	
 	
 
 	/**
@@ -373,8 +408,9 @@ public class MainActivity extends Activity {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		if(!(new File(buildCachePath(".jpg"))).exists()){
 			Log.i("info","image does not exist");
+			AsyncTask<URL, Void, Bitmap> loadImage = new MissingImageTask().execute(new URL("https://s3.amazonaws.com/mosswords/" + _currentPath + 
+					"/" + _currentSet.get(_currentIndex) + ".jpg"));
 			}
-		
 		try{
 			//First just determine the size of the bitmap file
 			 options.inJustDecodeBounds = true;
@@ -406,6 +442,7 @@ public class MainActivity extends Activity {
 		}	
 	}
 
+	
 	public static Bitmap drawableToBitmap (Drawable drawable) {
 	    if (drawable instanceof BitmapDrawable) {
 	        return ((BitmapDrawable)drawable).getBitmap();
@@ -760,31 +797,6 @@ public class MainActivity extends Activity {
 		
 	};
 	
-	 public static void trimCache(Context context) {
-	      try {
-	         File dir = context.getCacheDir();
-	         if (dir != null && dir.isDirectory()) {
-	            deleteDir(dir);
-	         }
-	      } catch (Exception e) {
-	         // TODO: handle exception
-	      }
-	   }
-
-	   public static boolean deleteDir(File dir) {
-	      if (dir != null && dir.isDirectory()) {
-	         String[] children = dir.list();
-	         for (int i = 0; i < children.length; i++) {
-	            boolean success = deleteDir(new File(dir, children[i]));
-	            if (!success) {
-	               return false;
-	            }
-	         }
-	      }
-
-	      // The directory is now empty so delete it
-	      return dir.delete();
-	   }
 
 	   @Override
 	   protected void onDestroy() {
@@ -819,37 +831,6 @@ public class MainActivity extends Activity {
 	    protected void onResume() {
 	        super.onResume();
 	    }
-
-		private class LoadMissingImageTask extends AsyncTask<String, Integer, Drawable>{
-
-			@Override
-			protected Drawable doInBackground(String... url) {
-			Drawable draw = null;
-			DefaultHttpClient httpClient = new DefaultHttpClient();
-			HttpGet request = new HttpGet(url[0]);
-			HttpResponse response;
-			try {
-			response = httpClient.execute(request);
-			InputStream is;
-			is = response.getEntity().getContent();
-			TypedValue typedValue = new TypedValue();
-			typedValue.density = TypedValue.DENSITY_NONE;
-			draw = Drawable.createFromResourceStream(null, typedValue, is, "src");
-			// _imgView.setImageDrawable(drawable);
-
-			} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			}
-
-			return draw;
-			}
-
-			}    
-
 
 		public AsyncTask.Status getDownloadHintsStatus() {
 			return downloadHints.getStatus();

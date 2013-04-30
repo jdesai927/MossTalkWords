@@ -94,7 +94,7 @@ public class StatsDbAdapter extends SQLiteOpenHelper {
     	values.put(KEY_GUESS, guess);
     	values.put(KEY_SUCCESS, success);
     	
-    	db.insert(TABLE_STATS, null, values);
+    	db.replace(TABLE_STATS, null, values);
     }
     
     public String getStats()
