@@ -516,7 +516,7 @@ public class MainActivity extends Activity {
 	}
 
     public void nextImage(){
-
+    	soundGenerator.stop();
     	double inc = 100.00/(_currentSet.size());
     	int currprog = progressBarSet.getProgress();
     	progressBarSet.setProgress(currprog + (int)Math.round(inc));
