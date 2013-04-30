@@ -59,11 +59,12 @@ public class PickSet extends Activity {
 	private TreeMap<String, ArrayList<String>> catToWords;
 	private TreeMap<String, Integer> catToSizeOfCat = new TreeMap<String, Integer>();
 	private TreeMap<String, Integer> catToNumWordCompleted = new TreeMap<String, Integer>();
+	private AsyncTask<String, Integer, Boolean> downloadFiles;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		
+		downloadFiles = new LoadFilesTask().execute("");
 		setContentView(R.layout.activity_pick);	
 		scores = new Scores(getApplicationContext());
 		//initialize category and difficulty
@@ -201,6 +202,7 @@ public class PickSet extends Activity {
 		Collections.shuffle(fullSet);
 		if (fullSet.size() > 10){
 			ArrayList<String> newSet = new ArrayList<String>();
+			//PUT BACK TO 10 NOT FULL SET*****JUSTFORTESTING
 			for(int i = 0; i<10; i++){
 				newSet.add(fullSet.get(i));
 			}
@@ -241,6 +243,54 @@ public class PickSet extends Activity {
 				}
 			});
 			alertDialog.show();
+		}
+	}
+	
+	/**
+	 *Async Task to load the images from the bucket and save them to the cache directory
+	 */
+	private class LoadFilesTask extends AsyncTask<String, Integer, Boolean>{
+		@Override
+		protected Boolean doInBackground(String... set) {
+			boolean b = false;
+			try {
+				//make sure currentSet has been defined already
+				if(categories != null){
+					for(String category: categories){
+					for (String word: catToWords.get(category)){
+						//set url for each image
+						URL ur = new URL("https://s3.amazonaws.com/mosswords/" + category + 
+								"/" + word + ".jpg");
+						//create file to be saved in cache directory with word.jpg file naming
+						File file = new File(getApplicationContext().getCacheDir(),word+".jpg");
+						//if this file doesn't exist already (not already downloaded)
+						if (file.exists() == false){
+							//Write the file to the cache dir
+							BufferedInputStream bis = new BufferedInputStream(ur.openConnection().getInputStream());
+							ByteArrayBuffer baf = new ByteArrayBuffer(50);
+							int current = 0;
+							while ((current = bis.read()) != -1){
+								baf.append((byte) current);
+							}
+							FileOutputStream fos = new FileOutputStream(file);
+							fos.write(baf.toByteArray());
+							fos.close();
+							b = true;
+							Log.i("info", file.getAbsolutePath() + "saved it!");
+						}
+						else{
+							Log.i("info", file.getAbsolutePath() + "  exists!");
+						}
+					}
+				} 
+			}
+			}
+			catch (MalformedURLException e1) {
+				Log.i("info", "MalformedURL exception!");
+			} catch (IOException e) {
+				Log.i("info", "IO exception!");
+			}
+		 return b;
 		}
 	}
 	
@@ -310,6 +360,12 @@ public class PickSet extends Activity {
 		}
 		@Override
 		protected void onPostExecute (Boolean result){
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			this.dialog.dismiss();
 		}
 		@Override

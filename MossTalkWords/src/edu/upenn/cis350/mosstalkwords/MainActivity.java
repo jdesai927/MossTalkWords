@@ -24,6 +24,7 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -282,6 +283,7 @@ public class MainActivity extends Activity {
 							fos.write(baf.toByteArray());
 							fos.close();
 							b = true;
+							Log.i("info", file.getAbsolutePath() + "saved it!");
 						}
 						else{
 							Log.i("info", file.getAbsolutePath() + "  exists!");
@@ -356,6 +358,8 @@ public class MainActivity extends Activity {
 		 return b;
 		}
 	}
+	
+	
 
 	/**
 	 * @throws ClientProtocolException
@@ -369,7 +373,8 @@ public class MainActivity extends Activity {
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		if(!(new File(buildCachePath(".jpg"))).exists()){
 			Log.i("info","image does not exist");
-		}
+			}
+		
 		try{
 			//First just determine the size of the bitmap file
 			 options.inJustDecodeBounds = true;
