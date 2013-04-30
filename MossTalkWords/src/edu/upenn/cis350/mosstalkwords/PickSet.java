@@ -85,7 +85,7 @@ public class PickSet extends Activity {
 				String email_body = statsDb.getStats();
 				
 				Intent email = new Intent(Intent.ACTION_SEND);
-				email.putExtra(Intent.EXTRA_EMAIL, new String[]{"vishwa@seas.upenn.edu"});		  
+				//email.putExtra(Intent.EXTRA_EMAIL, new String[]{"youremailhere"});		  
 				email.putExtra(Intent.EXTRA_SUBJECT, "PicSpeak Report");
 				email.putExtra(Intent.EXTRA_TEXT, email_body);
 				email.setType("message/rfc822");

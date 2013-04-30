@@ -1,6 +1,7 @@
 package edu.upenn.cis350.mosstalkwords.test;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.Button;
 import edu.upenn.cis350.mosstalkwords.EndSet;
@@ -23,6 +24,8 @@ public class EndSetTest extends ActivityInstrumentationTestCase2<EndSet> {
 		i.putExtra("set", "nonlivingthingseasy");
 		i.putExtra("setscore", 15);
 		i.putExtra("newstreak", true);
+		i.putExtra("newNumCorrect", true);
+		i.putExtra("numCorrect", 8);
 		
 		setActivityIntent(i);  //later EndSet calls to getIntent will return this (we need this to 
 								// initialize set directories, etc)
@@ -38,6 +41,7 @@ public class EndSetTest extends ActivityInstrumentationTestCase2<EndSet> {
 		assertTrue(act.set.equals("nonlivingthingseasy"));
 		assertTrue(act.newStreak);
 		assertTrue(act.setscore == 15);
+		assertTrue(act.newNumCorrect);
 		
 		act.finish();
 		
@@ -64,6 +68,24 @@ public class EndSetTest extends ActivityInstrumentationTestCase2<EndSet> {
 
 	}
 	*/
+	
+	/**
+	 * Tests if the activity's layout gets updated correctly
+	 * for the input parameters passed via the Intent.
+	 */
+	public void testLayout() {
+		
+		act = (EndSet) this.getActivity();
+		
+		assertTrue(act.setscoretext.getText().toString().equals("15"));
+		
+		assertTrue(act.correct.getText().toString().equals("8/10 Correct"));
+		
+		act.finish();
+
+	}
+	
+	
 	
 	/**
 	 * Test if clicking the finish button closes the activity
