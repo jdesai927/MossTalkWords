@@ -55,7 +55,7 @@ public class HelpTextActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				if(_textToSpeechButton.getText().equals("Start Help Reader"))
+				if(_textToSpeechButton.getText().equals("Start Help Text-To-Speech"))
 				{
 					if(_listenerIsReady)
 					{
@@ -70,7 +70,7 @@ public class HelpTextActivity extends Activity {
 				}
 				else
 				{
-					_textToSpeechButton.setText("Start Help Reader");
+					_textToSpeechButton.setText("Start Help Text-To-Speech");
 					_soundGenerator.stop();
 					_listenerIsReady = true;
 				}
@@ -102,7 +102,7 @@ public class HelpTextActivity extends Activity {
 
 		@Override
 		public void onUtteranceCompleted(String utteranceId) {
-			_textToSpeechButton.setText("Start Help Reader");
+			_textToSpeechButton.setText("Start Help Text-To-Speech");
 		}
 		
 	}
